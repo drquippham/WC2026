@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WC 2026 Team Prediction</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F0F4FF;--bg2:#E6EEFF;--white:#FFFFFF;
+  --primary:#2563EB;--primary2:#1D4ED8;
+  --accent:#F59E0B;--accent2:#D97706;
+  --green:#16A34A;--green-bg:#DCFCE7;
+  --red:#DC2626;--red-bg:#FEE2E2;
+  --orange:#EA580C;
+  --draw:#6B7280;--draw-bg:#F3F4F6;
+  --text:#111827;--text2:#374151;--text3:#6B7280;--text4:#9CA3AF;
+  --border:#D1D5DB;--border2:#E5E7EB;
+  --radius:14px;--radius-sm:10px;--radius-xs:6px;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
+.topbar{background:linear-gradient(135deg,#1D4ED8,#3B82F6);padding:0 20px;display:flex;
+  align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;
+  box-shadow:0 2px 8px rgba(37,99,235,.3)}
+.logo-ball{font-size:26px;display:inline-block;animation:spin 8s linear infinite}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.logo-text{font-family:'Bebas Neue';font-size:24px;color:#fff;letter-spacing:1.5px;display:inline;margin-left:8px}
+.logo-sub{font-size:12px;color:rgba(255,255,255,.7);font-weight:500;margin-left:6px}
+.nav-tabs{display:flex;gap:4px}
+.nav-tab{background:rgba(255,255,255,.15);border:none;color:rgba(255,255,255,.85);
+  font-family:'Inter';font-size:13px;font-weight:600;padding:7px 16px;border-radius:20px;cursor:pointer;transition:.2s}
+.nav-tab:hover{background:rgba(255,255,255,.25);color:#fff}
+.nav-tab.active{background:#fff;color:var(--primary)}
+.main{max-width:860px;margin:0 auto;padding:24px 16px}
+.page-hero{background:linear-gradient(135deg,var(--primary),#7C3AED);border-radius:var(--radius);
+  padding:20px 24px;margin-bottom:24px;color:#fff;display:flex;align-items:center;justify-content:space-between}
+.hero-title{font-family:'Arial';font-size:30px;letter-spacing:1px;line-height:1}
+.hero-sub{font-size:13px;opacity:.85;margin-top:4px}
+.hero-badge{background:rgba(255,255,255,.2);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:600}
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.filter-btn{background:var(--white);border:1.5px solid var(--border);color:var(--text2);
+  font-size:12px;font-weight:600;padding:6px 14px;border-radius:20px;cursor:pointer;transition:.2s;
+  box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.filter-btn:hover{border-color:var(--primary);color:var(--primary)}
+.filter-btn.active{border-color:var(--primary);color:#fff;background:var(--primary)}
+.date-label{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;
+  letter-spacing:.6px;margin:20px 0 10px;display:flex;align-items:center;gap:8px}
+.date-label::after{content:'';flex:1;height:1px;background:var(--border2)}
+.match-card{background:var(--white);border:1.5px solid var(--border2);border-radius:var(--radius);
+  padding:16px 18px;margin-bottom:10px;cursor:pointer;transition:.2s;
+  box-shadow:0 1px 3px rgba(0,0,0,.08);position:relative;overflow:hidden}
+.match-card:hover{box-shadow:0 4px 12px rgba(37,99,235,.15);transform:translateY(-2px);border-color:var(--primary)}
+.match-card.has-prediction{border-left:4px solid var(--accent)}
+.match-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.match-group-badge{background:linear-gradient(135deg,var(--primary),#7C3AED);color:#fff;
+  font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.5px}
+.time-chip{background:var(--bg2);border-radius:6px;padding:3px 8px;font-size:12px;font-weight:600;color:var(--primary)}
+.time-chip.soon{background:#FEF3C7;color:#D97706}
+.time-chip.live{background:#FEE2E2;color:#DC2626;animation:lp 1.4s infinite}
+@keyframes lp{0%,100%{opacity:1}50%{opacity:.5}}
+.time-chip.finished{background:var(--bg2);color:var(--text3)}
+.teams-row{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-bottom:14px}
+.team-block{display:flex;align-items:center;gap:10px}
+.team-block.away{flex-direction:row-reverse}
+.flag-img{width:36px;height:24px;border-radius:3px;object-fit:cover;box-shadow:0 1px 4px rgba(0,0,0,.25);flex-shrink:0}
+.flag-img.big{width:56px;height:37px;border-radius:4px}
+.team-name{font-family:'Bebas Neue';font-size:20px;letter-spacing:.5px;color:var(--text)}
+.team-block.away .team-name{text-align:right}
+.vs-center{text-align:center}
+.vs-text{font-family:'Bebas Neue';font-size:16px;color:var(--text3)}
+.score-display{font-family:'Bebas Neue';font-size:26px;color:var(--primary);
+  background:var(--bg2);border-radius:8px;padding:2px 10px;letter-spacing:2px}
+.odds-mini{display:flex;height:5px;border-radius:3px;overflow:hidden;gap:2px}
+.odds-seg{height:100%;border-radius:3px}
+.card-bottom{display:flex;align-items:center;justify-content:space-between;
+  margin-top:12px;padding-top:10px;border-top:1px solid var(--border2)}
+.pred-pill{display:flex;align-items:center;gap:5px;background:var(--bg2);
+  border-radius:20px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--primary)}
+.hint-text{font-size:11px;color:var(--text4)}
+.page{display:none}.page.active{display:block}
+.modal-overlay{position:fixed;inset:0;background:rgba(17,24,39,.6);z-index:200;
+  display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:18px;width:100%;max-width:560px;
+  max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);margin:auto}
+.modal-header{display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;border-bottom:1px solid var(--border2)}
+.modal-title{font-family:'Bebas Neue';font-size:22px;color:var(--primary)}
+.modal-close{background:var(--bg2);border:none;color:var(--text2);
+  width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:var(--red-bg);color:var(--red)}
+.modal-body{padding:18px 20px 20px}
+.modal-teams{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;
+  background:linear-gradient(135deg,#EEF2FF,#F0F9FF);border-radius:var(--radius-sm);padding:16px;margin-bottom:16px}
+.modal-team{text-align:center}
+.modal-flag-wrap{display:flex;justify-content:center;margin-bottom:8px}
+.modal-team-name{font-family:'Bebas Neue';font-size:22px;color:var(--text)}
+.modal-vs-block{text-align:center}
+.modal-vs-text{font-family:'Bebas Neue';font-size:16px;color:var(--text3)}
+.info-card{background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px}
+.info-card-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
+.odds-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.odds-item{text-align:center;padding:10px 6px;background:var(--white);border-radius:var(--radius-xs);border:1px solid var(--border2)}
+.odds-item-label{font-size:11px;color:var(--text3);margin-bottom:4px}
+.odds-item-val{font-family:'Bebas Neue';font-size:22px}
+.odds-item-val.w{color:var(--green)}.odds-item-val.d{color:var(--draw)}.odds-item-val.l{color:var(--red)}
+.odds-bar-big{display:flex;height:8px;border-radius:4px;overflow:hidden;gap:2px}
+.press-item{background:var(--white);border-left:3px solid var(--primary);
+  border-radius:0 var(--radius-xs) var(--radius-xs) 0;padding:10px 12px;margin-bottom:8px}
+.press-src{font-size:10px;font-weight:800;color:var(--primary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.press-txt{font-size:13px;color:var(--text2);line-height:1.55}
+.press-more{display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:var(--primary);text-decoration:none}
+.press-more:hover{text-decoration:underline}
+.ai-card{background:linear-gradient(135deg,#F5F3FF,#FAF5FF);border-color:#DDD6FE}
+.ai-txt{font-size:13px;color:var(--text2);line-height:1.65;text-align:justify;white-space:pre-wrap;word-break:break-word;overflow:visible;display:block}
+.ai-empty{font-size:12px;color:var(--text3);margin-bottom:10px}
+.ai-loading{font-size:13px;color:#7C3AED;font-weight:600;padding:6px 0}
+.btn-ai{background:linear-gradient(135deg,#7C3AED,#A855F7);color:#fff;border:none;border-radius:8px;
+  font-weight:700;font-size:12px;padding:8px 14px;cursor:pointer}
+.btn-ai:hover{opacity:.9}
+.btn-ai-refresh{background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px;opacity:.6;transition:.2s}
+.btn-ai-refresh:hover{opacity:1;transform:rotate(30deg)}
+/* W/D/L prediction buttons */
+.wdl-group{display:flex;gap:5px;flex-shrink:0}
+.btn-wdl{border:2px solid var(--border2);background:var(--white);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;transition:.15s;white-space:nowrap;max-width:80px;overflow:hidden;text-overflow:ellipsis}
+.btn-wdl:disabled{cursor:not-allowed;opacity:.5}
+.btn-wdl.home{color:#16A34A;border-color:#16A34A}
+.btn-wdl.home.selected,.btn-wdl.home:not(:disabled):hover{background:#16A34A;color:#fff}
+.btn-wdl.draw{color:#6B7280;border-color:#9CA3AF}
+.btn-wdl.draw.selected,.btn-wdl.draw:not(:disabled):hover{background:#6B7280;color:#fff}
+.btn-wdl.away{color:#DC2626;border-color:#DC2626}
+.btn-wdl.away.selected,.btn-wdl.away:not(:disabled):hover{background:#DC2626;color:#fff}
+/* Cống hiến badge */
+.cong-hien-badge{background:#F59E0B;color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:2px 8px;margin-bottom:4px;display:inline-block}
+.backup-btns{display:flex;gap:8px}
+.btn-backup{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;
+  font-size:12px;font-weight:700;padding:7px 13px;border-radius:20px;cursor:pointer;transition:.2s}
+.btn-backup:hover{background:rgba(255,255,255,.35)}
+.actual-card{background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:1.5px solid var(--accent);
+  border-radius:var(--radius-sm);padding:14px;margin-bottom:14px}
+.actual-title{font-size:11px;font-weight:800;color:var(--accent2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
+.actual-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.score-inp{width:50px;height:40px;border:2px solid var(--accent);border-radius:8px;
+  background:#fff;color:var(--text);font-family:'Bebas Neue';font-size:24px;text-align:center;padding:0}
+.score-inp:focus{outline:none;border-color:var(--primary)}
+.score-colon{font-family:'Bebas Neue';font-size:24px;color:var(--text2)}
+.btn-save-actual{margin-left:auto;background:var(--accent);color:#fff;border:none;
+  border-radius:8px;font-weight:700;font-size:12px;padding:8px 14px;cursor:pointer}
+.btn-save-actual:hover{background:var(--accent2)}
+.pred-card{background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:14px}
+.pred-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.pred-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px}
+.lock-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+.lock-open{background:var(--green-bg);color:var(--green)}
+.lock-locked{background:var(--red-bg);color:var(--red)}
+.member-row{display:flex;align-items:center;gap:8px;background:var(--white);
+  border-radius:var(--radius-xs);padding:8px 10px;margin-bottom:6px;border:1px solid var(--border2);flex-wrap:wrap}
+.member-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#7C3AED);
+  color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.member-info{flex:1;min-width:60px}
+.member-nm{font-size:13px;font-weight:700;color:var(--text)}
+.member-st{font-size:11px;color:var(--text3)}
+.score-input-group{display:flex;align-items:center;gap:5px}
+.pred-inp{width:42px;height:34px;border:1.5px solid var(--border);border-radius:6px;
+  background:var(--bg);color:var(--text);font-family:'Bebas Neue';font-size:20px;text-align:center;padding:0;transition:.2s}
+.pred-inp:focus{outline:none;border-color:var(--primary);background:#fff}
+.pred-inp:disabled{opacity:.45;cursor:not-allowed}
+.pred-sep{font-family:'Bebas Neue';font-size:18px;color:var(--text3)}
+.btn-save-pred{background:var(--primary);color:#fff;border:none;border-radius:6px;
+  font-weight:700;font-size:12px;padding:7px 12px;cursor:pointer;transition:.2s;white-space:nowrap}
+.btn-save-pred:hover{background:var(--primary2)}
+.btn-save-pred:disabled{background:var(--border);color:var(--text3);cursor:not-allowed}
+.pts-chip{font-family:'Bebas Neue';font-size:15px;padding:3px 8px;border-radius:5px}
+.pts-3{background:#FEF3C7;color:#D97706}.pts-1{background:var(--green-bg);color:var(--green)}.pts-0{background:var(--draw-bg);color:var(--draw)}
+.leaderboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:28px}
+.leader-card{background:var(--white);border:1.5px solid var(--border2);border-radius:var(--radius);
+  padding:18px 16px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08);position:relative;overflow:hidden}
+.leader-card::after{content:'';position:absolute;top:0;left:0;right:0;height:4px}
+.rank-1::after{background:linear-gradient(90deg,#F59E0B,#FBBF24)}
+.rank-2::after{background:linear-gradient(90deg,#9CA3AF,#D1D5DB)}
+.rank-3::after{background:linear-gradient(90deg,#CD7F32,#D97706)}
+.leader-rank-txt{font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px}
+.leader-av{width:50px;height:50px;border-radius:50%;margin:0 auto 8px;
+  display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800}
+.rank-1 .leader-av{background:#FEF3C7;color:#D97706}
+.rank-2 .leader-av{background:#F3F4F6;color:#6B7280}
+.rank-3 .leader-av{background:#FDE8CC;color:#CD7F32}
+.leader-nm{font-weight:700;font-size:15px;margin-bottom:6px}
+.leader-pts-big{font-family:'Bebas Neue';font-size:36px;color:var(--primary);line-height:1}
+.leader-pts-label{font-size:11px;color:var(--text3);margin-bottom:10px}
+.leader-stat-row{display:flex;justify-content:center;gap:10px;font-size:12px;color:var(--text3)}
+.leader-stat-row span{font-family:'Bebas Neue';font-size:18px;color:var(--text);display:block}
+.hist-wrap{overflow-x:auto;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--white)}
+.hist-table{width:100%;border-collapse:collapse;font-size:13px}
+.hist-table th{background:var(--bg);color:var(--text3);font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.5px;padding:8px 12px;border-bottom:1px solid var(--border2);text-align:left;white-space:nowrap}
+.hist-table td{padding:10px 12px;border-bottom:1px solid var(--border2);vertical-align:middle}
+.hist-table tr:last-child td{border-bottom:none}
+.hist-table tr:hover td{background:var(--bg)}
+.r-exact{color:var(--green);font-weight:700}
+.r-win{color:var(--orange);font-weight:600}
+.r-wrong{color:var(--draw)}
+.result-score{font-family:'Bebas Neue';font-size:18px;color:var(--primary)}
+.settings-card{background:var(--white);border:1px solid var(--border2);border-radius:var(--radius);
+  padding:18px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.settings-card h3{font-size:15px;font-weight:700;margin-bottom:14px}
+.member-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.mtag{display:flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid #BFDBFE;
+  border-radius:20px;padding:5px 12px;font-size:13px;font-weight:600;color:var(--primary)}
+.mtag button{background:none;border:none;cursor:pointer;color:#93C5FD;font-size:14px;line-height:1}
+.mtag button:hover{color:var(--red)}
+.add-row{display:flex;gap:8px}
+.add-inp{flex:1;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);
+  color:var(--text);font-size:13px;padding:9px 13px}
+.add-inp:focus{outline:none;border-color:var(--primary);background:#fff}
+.btn-add{background:var(--green);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:13px;padding:9px 18px;cursor:pointer}
+.btn-add:hover{background:#15803D}
+.scoring-card{background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border:1px solid #C7D2FE;
+  border-radius:var(--radius-sm);padding:14px;font-size:13px;color:var(--text2);line-height:2}
+.empty{text-align:center;padding:48px 20px;color:var(--text3)}
+.empty-icon{font-size:48px;margin-bottom:10px}
+@media(max-width:520px){
+  .topbar{padding:0 12px}.logo-sub{display:none}
+  .nav-tab{padding:6px 10px;font-size:12px}
+  .team-name{font-size:15px}.flag-img{width:28px;height:18px}
+  .leaderboard{grid-template-columns:1fr 1fr}
+}
+</style>
+<!-- ====== FIREBASE SDK ====== -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set, update, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const FB_CONFIG = {
+  apiKey: "AIzaSyDtYREJuzaC_mVuQKdkqQ2IcWUOXlK6IZE",
+  authDomain: "wc2026-5c79b.firebaseapp.com",
+  databaseURL: "https://wc2026-5c79b-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "wc2026-5c79b",
+  storageBucket: "wc2026-5c79b.firebasestorage.app",
+  messagingSenderId: "422812624425",
+  appId: "1:422812624425:web:720acf4a4d5b0cfe5d9e38",
+  measurementId: "G-7E84VMSK8N"
+};
+
+function setSyncStatus(txt, color){
+  const el = document.getElementById('sync-status');
+  if(el){ el.textContent = txt; el.style.color = color||''; }
+}
+
+try {
+  const app = initializeApp(FB_CONFIG);
+  const db  = getDatabase(app);
+  const dbRef = ref(db, 'wc2026');
+
+  // Lắng nghe real-time — chỉ merge sau khi MATCHES sẵn sàng
+  onValue(dbRef, (snapshot) => {
+    const data = snapshot.val();
+    if (!data) { setSyncStatus('🟢 Firebase kết nối (trống)', '#16A34A'); return; }
+
+    if (data.members && Array.isArray(data.members) && data.members.length) S.members = data.members;
+    if (data.predictions)  S.predictions  = data.predictions;
+    if (data.actualScores) S.actualScores = data.actualScores;
+    if (data.aiAnalysis)   S.aiAnalysis   = data.aiAnalysis;
+    if (data.autoResults)  S.autoResults  = data.autoResults;
+    if (data.pressLinks)   S.pressLinks   = data.pressLinks;
+    if (data.oddsCache)    S.oddsCache    = data.oddsCache;
+
+    // Render sau khi DOM + MATCHES sẵn sàng
+    function doRender(){
+      if(typeof MATCHES !== 'undefined' && MATCHES.length && typeof renderMatches === 'function'){
+        try { renderFilters(); renderMatches(); renderSettings(); } catch(e){ console.error('[FB render]', e); }
+        if(document.getElementById('page-dashboard')?.classList.contains('active'))
+          try { renderDashboard(); } catch(e){}
+        if(window.curMatch && document.getElementById('modal-overlay')?.classList.contains('open'))
+          try { document.getElementById('modal-body').innerHTML = buildModal(window.curMatch); } catch(e){}
+        // Áp dụng odds cache nếu có
+        if(S.oddsCache?.data && typeof applyOddsCache === 'function')
+          try { applyOddsCache(S.oddsCache.data); } catch(e){}
+        setSyncStatus('🟢 Đã đồng bộ', '#16A34A');
+      } else {
+        setTimeout(doRender, 150);
+      }
+    }
+    doRender();
+  });
+
+  // Push data lên Firebase nếu chưa có
+  get(dbRef).then(snap => {
+    if(!snap.exists()){
+      set(dbRef, {
+        members: S.members || [],
+        predictions: S.predictions || {},
+        actualScores: S.actualScores || {},
+        aiAnalysis: S.aiAnalysis || {},
+        autoResults: S.autoResults || {},
+        pressLinks: S.pressLinks || {},
+        oddsCache: S.oddsCache || {}
+      });
+    }
+    setSyncStatus('🟢 Firebase kết nối', '#16A34A');
+  });
+
+  // __fbSave: ghi 1 path cụ thể lên Firebase
+  window.__fbSave = async function(path, value){
+    setSyncStatus('🔄 Đang sync...', '#F59E0B');
+    try {
+      await update(dbRef, { [path]: value });
+      setSyncStatus('🟢 Đã đồng bộ', '#16A34A');
+    } catch(e) {
+      setSyncStatus('🔴 Lỗi: ' + e.message, '#DC2626');
+      console.error('[fbSave]', e);
+    }
+  };
+
+  setSyncStatus('🟢 Firebase kết nối', '#16A34A');
+  const fbCard = document.getElementById('fb-card-status');
+  if(fbCard){ fbCard.textContent = '🟢 Đã kết nối'; fbCard.style.color='#16A34A'; }
+} catch(e) {
+  const fbCard = document.getElementById('fb-card-status');
+  if(fbCard){ fbCard.textContent = '🔴 Lỗi: '+e.message; fbCard.style.color='#DC2626'; }
+  setSyncStatus('🔴 Firebase lỗi: ' + e.message, '#DC2626');
+  console.error('[Firebase init]', e);
+}
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div style="display:flex;align-items:center">
+    <span class="logo-ball">⚽</span>
+    <span class="logo-text">WC 2026</span>
+    <span class="logo-sub">— Team Prediction</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span id="sync-status" style="font-size:11px;font-weight:700;color:rgba(255,255,255,.6)">🔴 Chưa kết nối</span>
+    <nav class="nav-tabs">
+      <button class="nav-tab active" onclick="showPage('schedule',this)">📅 Lịch đấu</button>
+      <button class="nav-tab" onclick="showPage('dashboard',this)">🏆 Dashboard</button>
+      <button class="nav-tab" onclick="showPage('settings',this)">⚙️ Team</button>
+    </nav>
+  </div>
+</div>
+
+<div class="main">
+  <div id="page-schedule" class="page active">
+    <div class="page-hero">
+      <div>
+        <div class="hero-title">LỊCH THI ĐẤU FIFA WC 2026</div>
+        <div class="hero-sub">🇺🇸 USA · 🇨🇦 Canada · 🇲🇽 Mexico &nbsp;|&nbsp; Giờ Việt Nam (GMT+7)</div>
+      </div>
+      <div class="hero-badge" id="hero-count">0 dự đoán</div>
+    </div>
+    <div class="filter-bar" id="filter-bar"></div>
+    <div id="match-list"></div>
+  </div>
+
+  <div id="page-dashboard" class="page">
+    <div class="page-hero" style="background:linear-gradient(135deg,#7C3AED,#EC4899)">
+      <div>
+        <div class="hero-title">BẢNG XẾP HẠNG</div>
+        <div class="hero-sub">🎯 Đúng chính xác không bị trừ điểm &nbsp;·&nbsp;❌ Sai -1đ</div>
+      </div>
+      <div class="backup-btns">
+        <button class="btn-backup" onclick="autoFetchResults(true)">🔄 Cập nhật kết quả</button>
+        <button class="btn-backup" onclick="fetchOdds()">📊 Cập nhật tỷ lệ</button>
+        <button class="btn-backup" onclick="exportData()">⬇️ Export</button>
+        <button class="btn-backup" onclick="document.getElementById('import-file').click()">⬆️ Import</button>
+        <input type="file" id="import-file" accept="application/json" style="display:none" onchange="importData(this)">
+      </div>
+    </div>
+    <div id="fetch-status" style="font-size:12px;color:var(--text3);margin:-10px 0 16px"></div>
+    <div id="leaderboard-grid" class="leaderboard"></div>
+    <div style="font-family:'Bebas Neue';font-size:22px;color:var(--text);margin-bottom:14px;letter-spacing:.5px">📋 LỊCH SỬ DỰ ĐOÁN</div>
+    <div id="history-wrap"></div>
+  </div>
+
+  <div id="page-settings" class="page">
+    <div class="page-hero" style="background:linear-gradient(135deg,#059669,#10B981)">
+      <div>
+        <div class="hero-title">QUẢN LÝ TEAM</div>
+        <div class="hero-sub">Thêm/xóa thành viên tham gia dự đoán</div>
+      </div>
+    </div>
+    <div class="settings-card">
+      <h3>👥 Thành viên hiện tại</h3>
+      <div id="member-tags" class="member-tags"></div>
+      <div class="add-row">
+        <input id="new-member-input" class="add-inp" placeholder="Tên thành viên mới..." maxlength="20" onkeydown="if(event.key==='Enter')addMember()">
+        <button class="btn-add" onclick="addMember()">+ Thêm</button>
+      </div>
+    </div>
+    <div class="scoring-card">
+      <b style="color:var(--primary);font-size:14px">📏 Cách tính điểm</b><br>
+      🎯 Đoán <b>đoán chính xác</b> &rarr; <b style="color:var(--orange)">- 0 điểm</b><br>
+      ❌ Đoán <b>sai hoàn toàn</b> &rarr; <b style="color:var(--red)">-1 điểm</b><br>
+      🔒 Dự đoán bị <b>khóa 1 tiếng</b> trước khi bóng lăn
+    </div>
+
+    <div class="settings-card" style="border:2px solid #BFDBFE;background:linear-gradient(135deg,#EFF6FF,#F0F9FF)">
+      <h3>🔥 Firebase Realtime Sync</h3>
+      <div style="font-size:13px;color:var(--text2)">
+        Trạng thái: <span id="fb-card-status" style="font-weight:700">—</span>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px">
+        Dữ liệu vote được sync real-time cho toàn team qua Firebase.<br>
+        Project: <code>wc2026-5c79b</code> · Region: <code>asia-southeast1</code>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modal-overlay" class="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title"></div>
+      <button class="modal-close" onclick="closeModal()">&#x2715;</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+const FLAG_CODES={'Mexico':'mx','Canada':'ca','USA':'us','England':'gb-eng',
+'Argentina':'ar','Nigeria':'ng','France':'fr','Uruguay':'uy','Brazil':'br',
+'Croatia':'hr','Spain':'es','Poland':'pl','Germany':'de','Japan':'jp',
+'Portugal':'pt','Morocco':'ma','Netherlands':'nl','Belgium':'be',
+'Italy':'it','Switzerland':'ch','South Korea':'kr','Australia':'au',
+'Senegal':'sn','Ecuador':'ec','Wales':'gb-wls','Saudi Arabia':'sa','Qatar':'qa',
+'South Africa':'za','Czechia':'cz','Bosnia and Herzegovina':'ba','Haiti':'ht',
+'Scotland':'gb-sct','Paraguay':'py','Türkiye':'tr','Côte d\'Ivoire':'ci',
+'Curaçao':'cw','Sweden':'se','Tunisia':'tn','Egypt':'eg','New Zealand':'nz',
+'IR Iran':'ir','Cabo Verde':'cv','Iraq':'iq','Norway':'no','Jordan':'jo',
+'Austria':'at','Colombia':'co','Congo DR':'cd','Uzbekistan':'uz','Panama':'pa','Ghana':'gh'};
+
+function flagImg(country,big){
+  const code=FLAG_CODES[country]||'un';
+  const s=big?80:40;
+  return '<img src="https://flagcdn.com/w'+s+'/'+code+'.png" class="flag-img'+(big?' big':'')+'" alt="'+country+'" loading="lazy">';
+}
+
+/* Link nguồn cho từng báo: nếu press item có .url thì dùng, không thì tạo link tìm kiếm trên trang báo đó */
+const PRESS_SEARCH={
+  'VnExpress': (q)=>'https://timkiem.vnexpress.net/?q='+encodeURIComponent(q),
+  'Tuổi Trẻ':  (q)=>'https://tuoitre.vn/tim-kiem.htm?keywords='+encodeURIComponent(q),
+  'Thanh Niên':(q)=>'https://thanhnien.vn/tim-kiem/?query='+encodeURIComponent(q),
+  'Dân Trí':   (q)=>'https://dantri.com.vn/tim-kiem.htm?q='+encodeURIComponent(q),
+  'Bóng Đá+':  (q)=>'https://bongdaplus.vn/search?q='+encodeURIComponent(q),
+};
+function pressUrl(p,m){
+  // Ưu tiên: 1. Link cache từ Gemini, 2. Link cứng trong data, 3. Trang tìm kiếm báo
+  const cached=S.pressLinks&&S.pressLinks[m.id]&&S.pressLinks[m.id][p.src];
+  if(cached&&cached!=='null'&&cached!==null)return cached;
+  if(p.url)return p.url;
+  const q=m.home+' '+m.away+' World Cup 2026';
+  const fn=PRESS_SEARCH[p.src];
+  return fn?fn(q):'https://www.google.com/search?q='+encodeURIComponent(q);
+}
+function escapeHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+/* ====== LỊCH THI ĐẤU WC2026 — Matchday 1 (12 bảng A-L, lịch chính thức FIFA) ======
+   Giờ hiển thị là GIỜ VIỆT NAM (GMT+7). Bảng đấu theo kết quả bốc thăm 5/12/2025. */
+const MATCHES=[
+// ===== VÒNG BẢNG 72 TRẬN — Giờ VN (GMT+7) chính xác =====
+// ET 3PM = VN 02:00 hôm sau | ET 6PM = VN 05:00 hôm sau | ET 9PM = VN 08:00 hôm sau
+// ET 12AM = VN 11:00 cùng ngày | ET 1PM = VN 00:00 hôm sau | ET 4PM = VN 03:00 hôm sau
+// ET 7PM = VN 06:00 hôm sau | ET 10PM = VN 09:00 hôm sau | ET 11PM = VN 10:00 hôm sau
+// ET 8PM = VN 07:00 hôm sau | ET 8:30PM = VN 07:30 hôm sau | ET 9:30PM = VN 08:30 hôm sau
+
+// BẢNG A — 6 trận
+{id:'m01',group:'Bảng A',date:'2026-06-12',time:'02:00',home:'Mexico',away:'South Africa',venue:'Estadio Azteca, Mexico City',odds:{h:50,d:27,a:23},press:[{src:'VnExpress',txt:'Mexico vinh dự đá trận khai mạc trên sân Azteca huyền thoại. Lợi thế sân nhà và sự cuồng nhiệt của CĐV là vũ khí lớn.'},{src:'Tuổi Trẻ',txt:'Nam Phi trở lại World Cup với lứa cầu thủ trẻ giàu thể lực, nhưng kinh nghiệm và đẳng cấp của Mexico vẫn nhỉnh hơn.'}]},
+{id:'m02',group:'Bảng A',date:'2026-06-12',time:'09:00',home:'South Korea',away:'Czechia',venue:'Estadio Akron, Zapopan',odds:{h:38,d:30,a:32},press:[{src:'VnExpress',txt:'Hàn Quốc với Son Heung-min dẫn dắt vẫn là thế lực châu Á, quyết tâm vượt qua vòng bảng.'},{src:'Thanh Niên',txt:'CH Séc sở hữu lối chơi kỷ luật kiểu Trung Âu, hàng công đủ sắc bén để gây khó cho Hàn Quốc.'}]},
+{id:'m03',group:'Bảng A',date:'2026-06-18',time:'23:00',home:'Czechia',away:'South Africa',venue:'Mercedes-Benz Stadium, Atlanta',odds:{h:42,d:30,a:28},press:[{src:'VnExpress',txt:'CH Séc cần chiến thắng để nuôi hy vọng đi tiếp, Nam Phi sẽ chơi kiên cường phòng ngự.'},{src:'Tuổi Trẻ',txt:'Đây là trận đấu sống còn với cả hai đội, hứa hẹn kịch tính và quyết liệt.'}]},
+{id:'m04',group:'Bảng A',date:'2026-06-19',time:'08:00',home:'Mexico',away:'South Korea',venue:'Estadio Akron, Zapopan',odds:{h:44,d:28,a:28},press:[{src:'VnExpress',txt:'Mexico vs Hàn Quốc là trận cầu đỉnh của bảng A, quyết định ngôi đầu bảng.'},{src:'Thanh Niên',txt:'Son Heung-min và đội Hàn Quốc đủ sức đối đầu ngang ngửa với Mexico trên đất Guadalajara.'}]},
+{id:'m05',group:'Bảng A',date:'2026-06-25',time:'08:00',home:'Czechia',away:'Mexico',venue:'Estadio Azteca, Mexico City',odds:{h:20,d:26,a:54},press:[{src:'VnExpress',txt:'Mexico đá trên sân Azteca quen thuộc, có lợi thế lớn trước CH Séc trong trận cuối bảng.'},{src:'Tuổi Trẻ',txt:'CH Séc cần mọi điểm có thể, nhưng sức mạnh Mexico tại sân nhà là thử thách rất lớn.'}]},
+{id:'m06',group:'Bảng A',date:'2026-06-25',time:'08:00',home:'South Africa',away:'South Korea',venue:'Estadio BBVA, Monterrey',odds:{h:24,d:28,a:48},press:[{src:'VnExpress',txt:'Hàn Quốc cần điểm để đảm bảo suất đi tiếp, Nam Phi sẽ chiến đấu hết mình.'},{src:'Thanh Niên',txt:'Trận đấu cùng giờ đảm bảo tính công bằng, kết quả bảng A sẽ được định đoạt đồng thời.'}]},
+
+// BẢNG B — 6 trận
+{id:'m07',group:'Bảng B',date:'2026-06-13',time:'02:00',home:'Canada',away:'Bosnia and Herzegovina',venue:'BMO Field, Toronto',odds:{h:44,d:28,a:28},press:[{src:'VnExpress',txt:'Canada chơi trên sân nhà BMO Field với Alphonso Davies, khao khát thắng trận mở màn trước CĐV Toronto.'},{src:'Tuổi Trẻ',txt:'Bosnia có Dzeko giàu kinh nghiệm cùng dàn cầu thủ chơi bóng tại châu Âu, không dễ bị bắt nạt.'}]},
+{id:'m08',group:'Bảng B',date:'2026-06-14',time:'02:00',home:'Qatar',away:'Switzerland',venue:'Levi\'s Stadium, Santa Clara',odds:{h:20,d:26,a:54},press:[{src:'VnExpress',txt:'Thụy Sĩ với hàng thủ chắc chắn và lối đá thực dụng được đánh giá cao hơn hẳn Qatar.'},{src:'Thanh Niên',txt:'Qatar dù tiến bộ nhưng vẫn bị xem là cửa dưới; cần phép màu để có điểm trước Thụy Sĩ.'}]},
+{id:'m09',group:'Bảng B',date:'2026-06-19',time:'02:00',home:'Switzerland',away:'Bosnia and Herzegovina',venue:'SoFi Stadium, Los Angeles',odds:{h:48,d:26,a:26},press:[{src:'VnExpress',txt:'Thụy Sĩ cần thắng để khẳng định vị thế, Bosnia sẽ không dễ để tạo bất ngờ.'},{src:'Tuổi Trẻ',txt:'Đây là trận đấu giữa hai đội cần điểm, sẽ vô cùng quyết liệt và căng thẳng.'}]},
+{id:'m10',group:'Bảng B',date:'2026-06-19',time:'05:00',home:'Canada',away:'Qatar',venue:'BC Place, Vancouver',odds:{h:62,d:22,a:16},press:[{src:'VnExpress',txt:'Canada trên sân nhà Vancouver với Davies và đồng đội, gần như chắc chắn lấy 3 điểm trước Qatar.'},{src:'Thanh Niên',txt:'Qatar cần tạo kỳ tích, nhưng sức mạnh Canada tại sân nhà BC Place là quá lớn.'}]},
+{id:'m11',group:'Bảng B',date:'2026-06-25',time:'02:00',home:'Switzerland',away:'Canada',venue:'BC Place, Vancouver',odds:{h:36,d:28,a:36},press:[{src:'VnExpress',txt:'Thụy Sĩ vs Canada - trận đấu cân bằng quyết định ngôi nhất nhì bảng B, hứa hẹn kịch tính.'},{src:'Tuổi Trẻ',txt:'Canada trên sân nhà có thêm lợi thế, nhưng Thụy Sĩ là đối thủ rất cứng cáp.'}]},
+{id:'m12',group:'Bảng B',date:'2026-06-25',time:'02:00',home:'Bosnia and Herzegovina',away:'Qatar',venue:'Lumen Field, Seattle',odds:{h:50,d:28,a:22},press:[{src:'VnExpress',txt:'Bosnia cần thắng để giữ hy vọng đi tiếp, Qatar đã quen với vai trò đội yếu hơn.'},{src:'Thanh Niên',txt:'Trận cầu có thể quyết định số phận đội thứ ba tốt nhất bảng B.'}]},
+
+// BẢNG C — 6 trận
+{id:'m13',group:'Bảng C',date:'2026-06-14',time:'05:00',home:'Brazil',away:'Morocco',venue:'MetLife Stadium, East Rutherford',odds:{h:52,d:26,a:22},press:[{src:'VnExpress',txt:'Brazil với Vinicius Jr. đối đầu Morocco - á quân bán kết Qatar 2022. Trận cầu được mong đợi nhất ngày 13/6.'},{src:'Tuổi Trẻ',txt:'Hakimi và Amrabat sẽ là những vũ khí nguy hiểm của Morocco trước hàng thủ Brazil.'}]},
+{id:'m14',group:'Bảng C',date:'2026-06-14',time:'08:00',home:'Haiti',away:'Scotland',venue:'Gillette Stadium, Foxborough',odds:{h:18,d:26,a:56},press:[{src:'VnExpress',txt:'Scotland được đánh giá cao hơn rõ rệt, nhưng Haiti luôn mang lại bất ngờ trên sân cỏ.'},{src:'Thanh Niên',txt:'Scotland quyết tâm lấy 3 điểm để nuôi hy vọng vượt qua vòng bảng.'}]},
+{id:'m15',group:'Bảng C',date:'2026-06-20',time:'05:00',home:'Scotland',away:'Morocco',venue:'Gillette Stadium, Foxborough',odds:{h:28,d:28,a:44},press:[{src:'VnExpress',txt:'Morocco được đánh giá nhỉnh hơn Scotland, nhưng đội bóng xứ sương mù luôn chiến đấu quả cảm.'},{src:'Tuổi Trẻ',txt:'Scotland cần điểm để nuôi hy vọng đi tiếp, trận cầu hứa hẹn căng thẳng và kịch tính.'}]},
+{id:'m16',group:'Bảng C',date:'2026-06-20',time:'07:30',home:'Brazil',away:'Haiti',venue:'Lincoln Financial Field, Philadelphia',odds:{h:82,d:12,a:6},press:[{src:'VnExpress',txt:'Brazil gần như chắc chắn thắng Haiti - trận đấu để các ngôi sao Brazil tỏa sáng.'},{src:'Thanh Niên',txt:'Haiti sẽ chơi phòng ngự số đông và mơ về một phép màu trước Brazil.'}]},
+{id:'m17',group:'Bảng C',date:'2026-06-25',time:'05:00',home:'Scotland',away:'Brazil',venue:'Hard Rock Stadium, Miami Gardens',odds:{h:16,d:22,a:62},press:[{src:'VnExpress',txt:'Brazil vượt trội Scotland, nhưng đây là trận cuối bảng - mọi kết quả đều có thể xảy ra.'},{src:'Tuổi Trẻ',txt:'Scotland cần phép màu trước Brazil, nhưng tinh thần chiến đấu của họ không bao giờ thiếu.'}]},
+{id:'m18',group:'Bảng C',date:'2026-06-25',time:'05:00',home:'Morocco',away:'Haiti',venue:'Mercedes-Benz Stadium, Atlanta',odds:{h:72,d:18,a:10},press:[{src:'VnExpress',txt:'Morocco được đánh giá cao hơn nhiều, cần thắng đậm để cải thiện hiệu số bàn thắng.'},{src:'Thanh Niên',txt:'Haiti chơi hết mình nhưng khoảng cách đẳng cấp với Morocco là khá lớn.'}]},
+
+// BẢNG D — 6 trận
+{id:'m19',group:'Bảng D',date:'2026-06-13',time:'08:00',home:'USA',away:'Paraguay',venue:'SoFi Stadium, Los Angeles',odds:{h:46,d:27,a:27},press:[{src:'VnExpress',txt:'Mỹ đá trên sân nhà SoFi với Pulisic dẫn dắt, quyết ra quân thuận lợi trước Paraguay.'},{src:'Tuổi Trẻ',txt:'Paraguay với lối chơi rắn rỏi Nam Mỹ, hàng thủ kỷ luật, sẵn sàng gây khó cho chủ nhà.'}]},
+{id:'m20',group:'Bảng D',date:'2026-06-14',time:'11:00',home:'Australia',away:'Türkiye',venue:'BC Place, Vancouver',odds:{h:30,d:28,a:42},press:[{src:'VnExpress',txt:'Thổ Nhĩ Kỳ với dàn sao trẻ như Guler, Yildiz được đánh giá nhỉnh hơn Australia.'},{src:'Thanh Niên',txt:'Australia bền bỉ, giàu thể lực và tinh thần chiến đấu, không dễ bị đánh bại.'}]},
+{id:'m21',group:'Bảng D',date:'2026-06-20',time:'02:00',home:'USA',away:'Australia',venue:'Lumen Field, Seattle',odds:{h:50,d:26,a:24},press:[{src:'VnExpress',txt:'Mỹ tiếp tục chuỗi trận sân nhà, đối đầu Australia - đội luôn chơi kiên cường và khó chịu.'},{src:'Tuổi Trẻ',txt:'Australia không ngại ai, họ đã từng tạo bất ngờ lớn tại World Cup 2022.'}]},
+{id:'m22',group:'Bảng D',date:'2026-06-20',time:'10:00',home:'Türkiye',away:'Paraguay',venue:'Levi\'s Stadium, Santa Clara',odds:{h:46,d:28,a:26},press:[{src:'VnExpress',txt:'Thổ Nhĩ Kỳ cần điểm trước Paraguay để theo kịp nhịp độ bảng D sôi động.'},{src:'Thanh Niên',txt:'Paraguay sẽ không chịu thua dễ, họ luôn là đội bóng chiến đấu quyết liệt.'}]},
+{id:'m23',group:'Bảng D',date:'2026-06-26',time:'09:00',home:'Türkiye',away:'USA',venue:'SoFi Stadium, Los Angeles',odds:{h:28,d:26,a:46},press:[{src:'VnExpress',txt:'Mỹ trên sân nhà cần thắng để đảm bảo ngôi nhất bảng, Thổ Nhĩ Kỳ sẽ chiến đấu hết mình.'},{src:'Tuổi Trẻ',txt:'Đây là trận đấu quyết định tương lai cả hai đội, căng thẳng và không có chỗ cho sai lầm.'}]},
+{id:'m24',group:'Bảng D',date:'2026-06-26',time:'09:00',home:'Paraguay',away:'Australia',venue:'Levi\'s Stadium, Santa Clara',odds:{h:38,d:30,a:32},press:[{src:'VnExpress',txt:'Paraguay vs Australia - trận đấu giữa hai đội tranh suất thứ ba tốt nhất, hứa hẹn kịch tính.'},{src:'Thanh Niên',txt:'Cả hai đội cần điểm để nuôi hy vọng đi tiếp, trận cầu hứa hẹn rất hấp dẫn.'}]},
+
+// BẢNG E — 6 trận
+{id:'m25',group:'Bảng E',date:'2026-06-15',time:'00:00',home:'Germany',away:'Curaçao',venue:'NRG Stadium, Houston',odds:{h:86,d:10,a:4},press:[{src:'VnExpress',txt:'Đức gần như chắc chắn thắng Curaçao - quốc gia nhỏ nhất dự World Cup về dân số.'},{src:'Tuổi Trẻ',txt:'Curaçao viết nên lịch sử khi lần đầu dự World Cup, sẽ chơi hết sức trước đại gia Đức.'}]},
+{id:'m26',group:'Bảng E',date:'2026-06-15',time:'06:00',home:'Ivory Coast',away:'Ecuador',venue:'Lincoln Financial Field, Philadelphia',odds:{h:38,d:30,a:32},press:[{src:'VnExpress',txt:'Bờ Biển Ngà và Ecuador là trận đấu cân bằng, không đội nào được coi là rõ ràng hơn.'},{src:'Thanh Niên',txt:'Đây là trận đấu quan trọng cho cả hai đội để sớm có điểm tại bảng E.'}]},
+{id:'m27',group:'Bảng E',date:'2026-06-21',time:'03:00',home:'Germany',away:'Ivory Coast',venue:'BMO Field, Toronto',odds:{h:55,d:24,a:21},press:[{src:'VnExpress',txt:'Đức hồi sinh mạnh mẽ với Wirtz, Musiala, được ưu tiên trước Bờ Biển Ngà nhà vô địch CAN.'},{src:'Tuổi Trẻ',txt:'Bờ Biển Ngà với dàn cầu thủ thể lực sung mãn có thể gây bất ngờ cho Đức.'}]},
+{id:'m28',group:'Bảng E',date:'2026-06-21',time:'07:00',home:'Ecuador',away:'Curaçao',venue:'Arrowhead Stadium, Kansas City',odds:{h:58,d:24,a:18},press:[{src:'VnExpress',txt:'Ecuador cần thắng Curaçao để cải thiện vị thế tại bảng E.'},{src:'Thanh Niên',txt:'Curaçao sẽ chiến đấu hết mình nhưng khoảng cách đẳng cấp với Ecuador là khá rõ.'}]},
+{id:'m29',group:'Bảng E',date:'2026-06-26',time:'03:00',home:'Curaçao',away:'Ivory Coast',venue:'Lincoln Financial Field, Philadelphia',odds:{h:12,d:22,a:66},press:[{src:'VnExpress',txt:'Bờ Biển Ngà vượt trội Curaçao, đây là cơ hội để họ cải thiện hiệu số bàn thắng.'},{src:'Tuổi Trẻ',txt:'Curaçao chơi hết mình trong trận đấu cuối cùng tại World Cup đầu tiên của họ.'}]},
+{id:'m30',group:'Bảng E',date:'2026-06-26',time:'03:00',home:'Ecuador',away:'Germany',venue:'MetLife Stadium, East Rutherford',odds:{h:24,d:26,a:50},press:[{src:'VnExpress',txt:'Đức cần điểm trước Ecuador để chắc chắn đi tiếp, Ecuador cũng cần điểm để đua suất thứ ba.'},{src:'Thanh Niên',txt:'Đây là trận đấu quyết định bảng E, cả hai đội sẽ không có chỗ cho sai lầm.'}]},
+
+// BẢNG F — 6 trận
+{id:'m31',group:'Bảng F',date:'2026-06-15',time:'03:00',home:'Netherlands',away:'Japan',venue:'AT&T Stadium, Arlington',odds:{h:52,d:26,a:22},press:[{src:'VnExpress',txt:'Hà Lan với Gakpo, Xavi Simons đối đầu Nhật Bản - "sát thủ khổng lồ". Trận cầu rất được mong đợi.'},{src:'Tuổi Trẻ',txt:'Nhật Bản đã hạ Đức và Tây Ban Nha tại Qatar 2022, không ai dám xem thường họ.'}]},
+{id:'m32',group:'Bảng F',date:'2026-06-15',time:'09:00',home:'Sweden',away:'Tunisia',venue:'Estadio BBVA, Monterrey',odds:{h:52,d:28,a:20},press:[{src:'VnExpress',txt:'Thụy Điển với Isak và Gyokeres là cặp tiền đạo đáng sợ, được ưu tiên trước Tunisia.'},{src:'Thanh Niên',txt:'Tunisia chơi phòng ngự kỷ luật và sẽ tìm cơ hội từ các tình huống cố định.'}]},
+{id:'m33',group:'Bảng F',date:'2026-06-21',time:'00:00',home:'Tunisia',away:'Japan',venue:'Estadio BBVA, Monterrey',odds:{h:24,d:28,a:48},press:[{src:'VnExpress',txt:'Nhật Bản được đánh giá cao hơn Tunisia, trận này là mốc 1000 trận trong lịch sử World Cup.'},{src:'Thanh Niên',txt:'Tunisia sẽ chiến đấu hết mình để giành điểm trước Nhật Bản.'}]},
+{id:'m34',group:'Bảng F',date:'2026-06-21',time:'00:00',home:'Netherlands',away:'Sweden',venue:'NRG Stadium, Houston',odds:{h:50,d:28,a:22},press:[{src:'VnExpress',txt:'Hà Lan vs Thụy Điển - trận đấu Bắc Âu đối đầu, quyết định ngôi đầu bảng F.'},{src:'Tuổi Trẻ',txt:'Đây là trận đấu giữa hai đội ưu thích của bảng F, hứa hẹn vô cùng kịch tính.'}]},
+{id:'m35',group:'Bảng F',date:'2026-06-26',time:'06:00',home:'Japan',away:'Sweden',venue:'AT&T Stadium, Arlington',odds:{h:32,d:28,a:40},press:[{src:'VnExpress',txt:'Nhật Bản vs Thụy Điển - trận đấu cân bằng quyết định suất đi tiếp cuối cùng của bảng F.'},{src:'Tuổi Trẻ',txt:'Cả hai đội đều cần điểm, trận cầu hứa hẹn căng thẳng và không có khoan nhượng.'}]},
+{id:'m36',group:'Bảng F',date:'2026-06-26',time:'06:00',home:'Tunisia',away:'Netherlands',venue:'Arrowhead Stadium, Kansas City',odds:{h:16,d:22,a:62},press:[{src:'VnExpress',txt:'Hà Lan vượt trội Tunisia, nhưng đây là trận cuối bảng nên mọi kết quả đều có thể xảy ra.'},{src:'Thanh Niên',txt:'Tunisia sẽ chơi quả cảm trước Hà Lan trong trận quyết định số phận của họ.'}]},
+
+// BẢNG G — 6 trận
+{id:'m37',group:'Bảng G',date:'2026-06-16',time:'02:00',home:'Belgium',away:'Egypt',venue:'Lumen Field, Seattle',odds:{h:52,d:25,a:23},press:[{src:'VnExpress',txt:'Bỉ với De Bruyne, Doku vẫn là thế hệ tài năng, được ưu tiên trước Ai Cập.'},{src:'Tuổi Trẻ',txt:'Ai Cập có Salah ở phong độ cao, đủ sức một mình thay đổi cục diện trận đấu.'}]},
+{id:'m38',group:'Bảng G',date:'2026-06-16',time:'08:00',home:'IR Iran',away:'New Zealand',venue:'SoFi Stadium, Los Angeles',odds:{h:48,d:28,a:24},press:[{src:'VnExpress',txt:'Iran với kinh nghiệm nhiều kỳ World Cup và hàng thủ chắc chắn được đánh giá cao hơn New Zealand.'},{src:'Thanh Niên',txt:'New Zealand — đại diện châu Đại Dương — chơi giàu thể lực, quyết tâm gây bất ngờ.'}]},
+{id:'m39',group:'Bảng G',date:'2026-06-22',time:'02:00',home:'Belgium',away:'IR Iran',venue:'SoFi Stadium, Los Angeles',odds:{h:56,d:24,a:20},press:[{src:'VnExpress',txt:'Bỉ cần thắng Iran để đảm bảo vị thế tại bảng G, trận đấu quan trọng với cả hai đội.'},{src:'Tuổi Trẻ',txt:'Iran sẽ chơi phòng ngự chặt chẽ và tìm cơ hội phản công trước Bỉ.'}]},
+{id:'m40',group:'Bảng G',date:'2026-06-22',time:'08:00',home:'New Zealand',away:'Egypt',venue:'BC Place, Vancouver',odds:{h:26,d:28,a:46},press:[{src:'VnExpress',txt:'Ai Cập được đánh giá cao hơn New Zealand, với Salah là lá bài chủ lực.'},{src:'Thanh Niên',txt:'New Zealand sẽ chiến đấu hết sức trên sân Vancouver để giành điểm trước Ai Cập.'}]},
+{id:'m41',group:'Bảng G',date:'2026-06-27',time:'10:00',home:'New Zealand',away:'Belgium',venue:'BC Place, Vancouver',odds:{h:18,d:22,a:60},press:[{src:'VnExpress',txt:'Bỉ vượt trội New Zealand, nhưng đây là trận cuối bảng nên mọi kết quả đều có thể xảy ra.'},{src:'Tuổi Trẻ',txt:'New Zealand chơi hết mình trước Bỉ trong trận đấu cuối cùng, không có gì để mất.'}]},
+{id:'m42',group:'Bảng G',date:'2026-06-27',time:'10:00',home:'Egypt',away:'IR Iran',venue:'Lumen Field, Seattle',odds:{h:40,d:30,a:30},press:[{src:'VnExpress',txt:'Ai Cập vs Iran — trận đấu giữa hai đội Trung Đông và Bắc Phi, quyết định số phận bảng G.'},{src:'Thanh Niên',txt:'Cả hai đội cần điểm để đảm bảo suất đi tiếp, trận đấu hứa hẹn căng thẳng và quyết liệt.'}]},
+
+// BẢNG H — 6 trận
+{id:'m43',group:'Bảng H',date:'2026-06-15',time:'23:00',home:'Spain',away:'Cape Verde',venue:'Mercedes-Benz Stadium, Atlanta',odds:{h:82,d:12,a:6},press:[{src:'VnExpress',txt:'Tây Ban Nha — ĐKVĐ châu Âu với Yamal, Pedri — là ứng viên vô địch, gần như chắc thắng Cabo Verde.'},{src:'Tuổi Trẻ',txt:'Cabo Verde lần đầu dự World Cup, viết nên câu chuyện cổ tích, sẽ chơi hết mình trước La Roja.'}]},
+{id:'m44',group:'Bảng H',date:'2026-06-16',time:'05:00',home:'Saudi Arabia',away:'Uruguay',venue:'Hard Rock Stadium, Miami Gardens',odds:{h:28,d:26,a:46},press:[{src:'VnExpress',txt:'Uruguay với Valverde, Núñez luôn là đối thủ nguy hiểm, được đánh giá cao hơn Saudi Arabia.'},{src:'Thanh Niên',txt:'Saudi Arabia đã tạo bất ngờ lớn tại Qatar 2022, họ không phải đội dễ đánh bại.'}]},
+{id:'m45',group:'Bảng H',date:'2026-06-21',time:'23:00',home:'Spain',away:'Saudi Arabia',venue:'Mercedes-Benz Stadium, Atlanta',odds:{h:70,d:18,a:12},press:[{src:'VnExpress',txt:'Tây Ban Nha vượt trội Saudi Arabia, La Roja sẽ muốn thắng đậm để cải thiện hiệu số.'},{src:'Tuổi Trẻ',txt:'Saudi Arabia sẽ chơi phòng ngự chặt và tìm cơ hội từ các tình huống bóng chết.'}]},
+{id:'m46',group:'Bảng H',date:'2026-06-22',time:'05:00',home:'Uruguay',away:'Cape Verde',venue:'Hard Rock Stadium, Miami Gardens',odds:{h:72,d:18,a:10},press:[{src:'VnExpress',txt:'Uruguay vượt trội Cabo Verde hoàn toàn, cần thắng đậm để cải thiện hiệu số.'},{src:'Thanh Niên',txt:'Cabo Verde sẽ chiến đấu hết mình nhưng khoảng cách đẳng cấp với Uruguay là khá lớn.'}]},
+{id:'m47',group:'Bảng H',date:'2026-06-27',time:'07:00',home:'Cape Verde',away:'Saudi Arabia',venue:'NRG Stadium, Houston',odds:{h:32,d:30,a:38},press:[{src:'VnExpress',txt:'Trận đấu giữa hai đội tranh suất thứ ba bảng H, không bên nào muốn thua.'},{src:'Tuổi Trẻ',txt:'Cabo Verde và Saudi Arabia đều cần điểm, trận đấu hứa hẹn kịch tính.'}]},
+{id:'m48',group:'Bảng H',date:'2026-06-27',time:'07:00',home:'Uruguay',away:'Spain',venue:'Estadio Akron, Zapopan',odds:{h:24,d:28,a:48},press:[{src:'VnExpress',txt:'Tây Ban Nha vượt trội nhưng Uruguay với Valverde, Núñez luôn là đối thủ khó chịu bậc nhất.'},{src:'Thanh Niên',txt:'Uruguay chơi rắn, giàu bản lĩnh trận lớn, hoàn toàn có thể cầm hòa hoặc đánh bại Tây Ban Nha.'}]},
+
+// BẢNG I — 6 trận
+{id:'m49',group:'Bảng I',date:'2026-06-17',time:'02:00',home:'France',away:'Senegal',venue:'MetLife Stadium, East Rutherford',odds:{h:62,d:22,a:16},press:[{src:'VnExpress',txt:'Pháp — số 1 thế giới với Mbappé — là ứng viên vô địch hàng đầu, được ưu tiên trước Senegal.'},{src:'Tuổi Trẻ',txt:'Senegal với Mane, Diallo sẽ không bị động, đây sẽ là trận đấu cân bằng hơn nhiều người nghĩ.'}]},
+{id:'m50',group:'Bảng I',date:'2026-06-17',time:'05:00',home:'Iraq',away:'Norway',venue:'Gillette Stadium, Foxborough',odds:{h:20,d:24,a:56},press:[{src:'VnExpress',txt:'Na Uy với Haaland, Odegaard lần đầu trở lại World Cup sau nhiều năm, đầy tham vọng.'},{src:'Thanh Niên',txt:'Iraq vượt qua vòng play-off nghẹt thở, sẽ chơi phòng ngự số đông trước Na Uy.'}]},
+{id:'m51',group:'Bảng I',date:'2026-06-23',time:'04:00',home:'France',away:'Iraq',venue:'Lincoln Financial Field, Philadelphia',odds:{h:78,d:14,a:8},press:[{src:'VnExpress',txt:'Pháp gần như chắc chắn thắng Iraq, đây là cơ hội để Les Bleus thể hiện sức mạnh đầy đủ.'},{src:'Tuổi Trẻ',txt:'Iraq sẽ cố gắng hết sức, nhưng khoảng cách đẳng cấp với Pháp là quá lớn.'}]},
+{id:'m52',group:'Bảng I',date:'2026-06-23',time:'07:00',home:'Norway',away:'Senegal',venue:'MetLife Stadium, East Rutherford',odds:{h:40,d:28,a:32},press:[{src:'VnExpress',txt:'Na Uy vs Senegal — trận đấu cân bằng, ai thắng sẽ có nhiều cơ hội đi tiếp hơn.'},{src:'Thanh Niên',txt:'Haaland vs Mane là cuộc đối đầu của hai chân sút đáng xem nhất bảng I.'}]},
+{id:'m53',group:'Bảng I',date:'2026-06-27',time:'02:00',home:'Norway',away:'France',venue:'Gillette Stadium, Foxborough',odds:{h:22,d:24,a:54},press:[{src:'VnExpress',txt:'Pháp vượt trội Na Uy nhưng Haaland luôn là mối đe dọa với bất kỳ hàng thủ nào.'},{src:'Tuổi Trẻ',txt:'Na Uy sẽ chiến đấu hết mình, nhưng Pháp với đội hình đẳng cấp thế giới vẫn là cửa trên rõ ràng.'}]},
+{id:'m54',group:'Bảng I',date:'2026-06-27',time:'02:00',home:'Senegal',away:'Iraq',venue:'BMO Field, Toronto',odds:{h:58,d:24,a:18},press:[{src:'VnExpress',txt:'Senegal cần thắng Iraq để đảm bảo suất đi tiếp, đội bóng châu Phi luôn chơi với tinh thần chiến đấu cao.'},{src:'Thanh Niên',txt:'Iraq sẽ chơi không có gì để mất, quyết tâm gây bất ngờ trước Senegal.'}]},
+
+// BẢNG J — 6 trận
+{id:'m55',group:'Bảng J',date:'2026-06-17',time:'08:00',home:'Argentina',away:'Algeria',venue:'Arrowhead Stadium, Kansas City',odds:{h:72,d:16,a:12},press:[{src:'VnExpress',txt:'Argentina — ĐKVĐ thế giới với Messi — mở đầu hành trình bảo vệ ngôi vương trước Algeria.'},{src:'Tuổi Trẻ',txt:'Algeria có đội hình tốt nhất trong nhiều năm, quyết tạo bất ngờ trước nhà vô địch thế giới.'}]},
+{id:'m56',group:'Bảng J',date:'2026-06-17',time:'11:00',home:'Austria',away:'Jordan',venue:'Levi\'s Stadium, Santa Clara',odds:{h:58,d:24,a:18},press:[{src:'VnExpress',txt:'Áo với lối pressing hiện đại được đánh giá cao hơn Jordan lần đầu dự World Cup.'},{src:'Thanh Niên',txt:'Jordan viết nên lịch sử khi lần đầu dự World Cup, sẽ chơi hết mình trước Áo.'}]},
+{id:'m57',group:'Bảng J',date:'2026-06-23',time:'00:00',home:'Argentina',away:'Austria',venue:'AT&T Stadium, Arlington',odds:{h:60,d:22,a:18},press:[{src:'VnExpress',txt:'Argentina với bản lĩnh nhà vô địch được ưu tiên, nhưng Áo không phải đối thủ dễ chơi.'},{src:'Tuổi Trẻ',txt:'Áo với lối pressing hiện đại và dàn cầu thủ Bundesliga đủ sức gây khó cho Argentina.'}]},
+{id:'m58',group:'Bảng J',date:'2026-06-23',time:'10:00',home:'Jordan',away:'Algeria',venue:'Levi\'s Stadium, Santa Clara',odds:{h:28,d:30,a:42},press:[{src:'VnExpress',txt:'Algeria được đánh giá nhỉnh hơn Jordan, nhưng trận đấu này quyết định số phận cả hai đội.'},{src:'Thanh Niên',txt:'Jordan sẽ chơi quả cảm trước Algeria trong trận đấu có ý nghĩa sống còn.'}]},
+{id:'m59',group:'Bảng J',date:'2026-06-28',time:'09:00',home:'Jordan',away:'Argentina',venue:'AT&T Stadium, Arlington',odds:{h:8,d:16,a:76},press:[{src:'VnExpress',txt:'Argentina — ĐKVĐ thế giới với Messi và dàn sao — vượt trội hoàn toàn trước Jordan.'},{src:'Tuổi Trẻ',txt:'Jordan lần đầu dự World Cup, sẽ chơi tử thủ và mơ về một kết quả lịch sử trước Argentina.'}]},
+{id:'m60',group:'Bảng J',date:'2026-06-28',time:'09:00',home:'Algeria',away:'Austria',venue:'Arrowhead Stadium, Kansas City',odds:{h:34,d:28,a:38},press:[{src:'VnExpress',txt:'Algeria vs Áo — trận đấu quyết định suất đi tiếp thứ hai của bảng J, rất cân bằng.'},{src:'Thanh Niên',txt:'Cả hai đội đều cần điểm, trận cầu hứa hẹn căng thẳng và không có khoan nhượng.'}]},
+
+// BẢNG K — 6 trận
+{id:'m61',group:'Bảng K',date:'2026-06-18',time:'00:00',home:'Portugal',away:'Congo DR',venue:'NRG Stadium, Houston',odds:{h:70,d:18,a:12},press:[{src:'VnExpress',txt:'Bồ Đào Nha với dàn công hùng hậu gần như chắc chắn lấy 3 điểm trước CHDC Congo.'},{src:'Tuổi Trẻ',txt:'CHDC Congo với thể lực sung mãn và bóng đá châu Phi đặc trưng, sẽ không bị khuất phục dễ dàng.'}]},
+{id:'m62',group:'Bảng K',date:'2026-06-18',time:'09:00',home:'Uzbekistan',away:'Colombia',venue:'Estadio Azteca, Mexico City',odds:{h:24,d:26,a:50},press:[{src:'VnExpress',txt:'Colombia với James Rodriguez rất khó lường, được đánh giá cao hơn Uzbekistan lần đầu dự World Cup.'},{src:'Tuổi Trẻ',txt:'Uzbekistan lần đầu dự World Cup, lối đá kỷ luật và quyết tâm cao, sẽ là ẩn số thú vị.'}]},
+{id:'m63',group:'Bảng K',date:'2026-06-24',time:'00:00',home:'Portugal',away:'Uzbekistan',venue:'NRG Stadium, Houston',odds:{h:76,d:14,a:10},press:[{src:'VnExpress',txt:'Bồ Đào Nha vượt trội Uzbekistan hoàn toàn, đây là cơ hội để họ cải thiện hiệu số bàn thắng.'},{src:'Tuổi Trẻ',txt:'Uzbekistan sẽ chơi kiên cường trước Bồ Đào Nha trong trận đấu lịch sử của họ.'}]},
+{id:'m64',group:'Bảng K',date:'2026-06-24',time:'09:00',home:'Colombia',away:'Congo DR',venue:'Estadio Akron, Zapopan',odds:{h:54,d:26,a:20},press:[{src:'VnExpress',txt:'Colombia cần thắng CHDC Congo để đảm bảo vị thế trong bảng K.'},{src:'Thanh Niên',txt:'CHDC Congo sẽ chơi với tinh thần châu Phi đặc trưng, không dễ bị bắt nạt.'}]},
+{id:'m65',group:'Bảng K',date:'2026-06-28',time:'06:30',home:'Colombia',away:'Portugal',venue:'Hard Rock Stadium, Miami Gardens',odds:{h:30,d:28,a:42},press:[{src:'VnExpress',txt:'Bồ Đào Nha với dàn công hùng hậu được đánh giá nhỉnh hơn, nhưng Colombia của James Rodriguez rất khó lường.'},{src:'Tuổi Trẻ',txt:'Colombia chơi kỹ thuật, giàu cảm hứng Nam Mỹ, hoàn toàn có thể tạo bất ngờ trước Bồ Đào Nha.'}]},
+{id:'m66',group:'Bảng K',date:'2026-06-28',time:'06:30',home:'Congo DR',away:'Uzbekistan',venue:'Mercedes-Benz Stadium, Atlanta',odds:{h:46,d:28,a:26},press:[{src:'VnExpress',txt:'CHDC Congo với dàn cầu thủ thể lực sung mãn được đánh giá nhỉnh hơn đôi chút.'},{src:'Thanh Niên',txt:'Uzbekistan lần đầu dự World Cup, lối đá kỷ luật và quyết tâm cao, sẽ là ẩn số thú vị.'}]},
+
+// BẢNG L — 6 trận
+{id:'m67',group:'Bảng L',date:'2026-06-18',time:'03:00',home:'England',away:'Croatia',venue:'AT&T Stadium, Arlington',odds:{h:54,d:26,a:20},press:[{src:'VnExpress',txt:'Anh — với Bellingham, Saka, Kane — đối đầu Croatia trong màn tái hiện bán kết 2018 đầy kịch tính.'},{src:'Tuổi Trẻ',txt:'Croatia chuyên gia giải lớn với Modric vẫn minh mẫn, đủ sức gây khó cho Tam Sư.'}]},
+{id:'m68',group:'Bảng L',date:'2026-06-18',time:'06:00',home:'Ghana',away:'Panama',venue:'BMO Field, Toronto',odds:{h:48,d:28,a:24},press:[{src:'VnExpress',txt:'Ghana với dàn cầu thủ trẻ tốc độ được đánh giá cao hơn Panama.'},{src:'Thanh Niên',txt:'Panama chơi giàu thể lực và tinh thần, quyết tạo bất ngờ trước Ghana.'}]},
+{id:'m69',group:'Bảng L',date:'2026-06-24',time:'03:00',home:'England',away:'Ghana',venue:'Gillette Stadium, Foxborough',odds:{h:66,d:20,a:14},press:[{src:'VnExpress',txt:'Anh vượt trội Ghana hoàn toàn, đây là cơ hội để Tam Sư thể hiện sức mạnh đầy đủ.'},{src:'Tuổi Trẻ',txt:'Ghana sẽ không bị động, họ từng tạo bất ngờ lớn tại World Cup trước đây.'}]},
+{id:'m70',group:'Bảng L',date:'2026-06-24',time:'06:00',home:'Panama',away:'Croatia',venue:'BMO Field, Toronto',odds:{h:20,d:26,a:54},press:[{src:'VnExpress',txt:'Croatia được đánh giá cao hơn Panama nhiều, cần thắng để đảm bảo suất đi tiếp.'},{src:'Thanh Niên',txt:'Panama sẽ chơi kiên cường và tìm cơ hội gây bất ngờ trước Croatia.'}]},
+{id:'m71',group:'Bảng L',date:'2026-06-28',time:'04:00',home:'Panama',away:'England',venue:'MetLife Stadium, East Rutherford',odds:{h:10,d:20,a:70},press:[{src:'VnExpress',txt:'Anh — với Bellingham, Saka, Kane — là ứng viên vô địch, vượt trội hoàn toàn trước Panama.'},{src:'Tuổi Trẻ',txt:'Panama chơi giàu thể lực và tinh thần, nhưng khoảng cách đẳng cấp với Tam Sư là quá lớn.'}]},
+{id:'m72',group:'Bảng L',date:'2026-06-28',time:'04:00',home:'Croatia',away:'Ghana',venue:'Lincoln Financial Field, Philadelphia',odds:{h:52,d:27,a:21},press:[{src:'VnExpress',txt:'Croatia — chuyên gia giải lớn với Modric vẫn minh mẫn — được đánh giá cao hơn Ghana.'},{src:'Thanh Niên',txt:'Ghana với dàn cầu thủ trẻ tốc độ chơi tại châu Âu, đủ sức tạo nên bất ngờ trước Croatia.'}]},
+
+// ===== VÒNG 32 — 16 trận =====
+{id:'r32_01',group:'Vòng 32',date:'2026-06-29',time:'02:00',home:'Nhì A',away:'Nhì B',venue:'SoFi Stadium, Los Angeles',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Vòng 32 khai màn — đội nhì bảng A gặp nhì bảng B tại Los Angeles.'},{src:'Tuổi Trẻ',txt:'Thể thức mới lạ — vòng 32 lần đầu xuất hiện trong lịch sử World Cup.'}]},
+{id:'r32_02',group:'Vòng 32',date:'2026-06-30',time:'00:00',home:'Nhất C',away:'Nhì F',venue:'NRG Stadium, Houston',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Đội nhất bảng C đối đầu nhì bảng F trong trận vòng 32 hấp dẫn.'},{src:'Tuổi Trẻ',txt:'Vòng knock-out bắt đầu — không có chỗ cho sai lầm.'}]},
+{id:'r32_03',group:'Vòng 32',date:'2026-06-30',time:'03:30',home:'Nhất E',away:'3rd tốt nhất',venue:'Gillette Stadium, Foxborough',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Đội nhất bảng E gặp một trong những đội thứ ba tốt nhất.'},{src:'Tuổi Trẻ',txt:'Các đội thứ ba tốt nhất có cơ hội lịch sử tiếp tục hành trình tại World Cup.'}]},
+{id:'r32_04',group:'Vòng 32',date:'2026-06-30',time:'08:00',home:'Nhất F',away:'Nhì C',venue:'Estadio BBVA, Monterrey',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Đội nhất bảng F gặp nhì bảng C — trận đấu knock-out đầy kịch tính.'},{src:'Tuổi Trẻ',txt:'Một trận thua là hết — đó là sức hút của bóng đá knock-out.'}]},
+{id:'r32_05',group:'Vòng 32',date:'2026-07-01',time:'00:00',home:'Nhì E',away:'Nhì I',venue:'AT&T Stadium, Arlington',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Đội nhì bảng E gặp nhì bảng I trong trận vòng 32 đầy căng thẳng.'},{src:'Tuổi Trẻ',txt:'Vòng 32 tiếp tục mang lại những cuộc đối đầu bất ngờ.'}]},
+{id:'r32_06',group:'Vòng 32',date:'2026-07-01',time:'04:00',home:'Nhất I',away:'3rd tốt nhất',venue:'MetLife Stadium, East Rutherford',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Đội nhất bảng I gặp một trong những đội thứ ba tốt nhất tại MetLife.'},{src:'Tuổi Trẻ',txt:'MetLife — sân của Chung kết — chứng kiến bước đầu tiên của hành trình dài.'}]},
+{id:'r32_07',group:'Vòng 32',date:'2026-07-01',time:'08:00',home:'Nhất A',away:'3rd tốt nhất',venue:'Estadio Azteca, Mexico City',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Đội nhất bảng A đá trên sân Azteca trong trận vòng 32 lịch sử.'},{src:'Tuổi Trẻ',txt:'Azteca — sân đã chứng kiến trận khai mạc — tiếp tục là sân khấu của những khoảnh khắc lớn.'}]},
+{id:'r32_08',group:'Vòng 32',date:'2026-07-01',time:'23:00',home:'Nhất L',away:'3rd tốt nhất',venue:'Mercedes-Benz Stadium, Atlanta',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Đội nhất bảng L bước vào vòng 32 với quyết tâm cao.'},{src:'Tuổi Trẻ',txt:'Atlanta đã chứng kiến Tây Ban Nha đại thắng — giờ chứng kiến thêm khoảnh khắc lịch sử.'}]},
+{id:'r32_09',group:'Vòng 32',date:'2026-07-02',time:'03:00',home:'Nhất G',away:'3rd tốt nhất',venue:'Lumen Field, Seattle',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Đội nhất bảng G tiếp tục hành trình vòng 32 tại Seattle.'},{src:'Tuổi Trẻ',txt:'Vòng 32 — sân chơi của 32 đội xuất sắc nhất World Cup 2026.'}]},
+{id:'r32_10',group:'Vòng 32',date:'2026-07-02',time:'07:00',home:'Nhì D',away:'Nhì G',venue:'AT&T Stadium, Arlington',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Đội nhì bảng D gặp nhì bảng G — cuộc đối đầu knock-out căng thẳng.'},{src:'Tuổi Trẻ',txt:'Bóng đá knock-out luôn đầy kịch tính — ai bước tiếp, ai về nhà?'}]},
+{id:'r32_11',group:'Vòng 32',date:'2026-07-02',time:'22:00',home:'Nhất H',away:'Nhì J',venue:'SoFi Stadium, Los Angeles',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Đội nhất bảng H gặp nhì bảng J — cuộc đụng độ hứa hẹn bùng nổ.'},{src:'Tuổi Trẻ',txt:'Mỗi trận vòng 32 đều có thể tạo địa chấn và kết thúc giấc mơ của một ông lớn.'}]},
+{id:'r32_12',group:'Vòng 32',date:'2026-07-03',time:'06:00',home:'Nhì K',away:'Nhì L',venue:'BMO Field, Toronto',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Đội nhì bảng K gặp nhì bảng L tại Toronto — trận đấu vòng 32 đầy hứa hẹn.'},{src:'Tuổi Trẻ',txt:'Toronto — đã chứng kiến Canada hòa Bosnia — giờ là sân khấu vòng knock-out.'}]},
+{id:'r32_13',group:'Vòng 32',date:'2026-07-03',time:'10:00',home:'Nhất B',away:'3rd tốt nhất',venue:'BC Place, Vancouver',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Đội nhất bảng B gặp một trong những đội thứ ba tốt nhất tại Vancouver.'},{src:'Tuổi Trẻ',txt:'BC Place — sân của Canada — chứng kiến thêm những khoảnh khắc đáng nhớ.'}]},
+{id:'r32_14',group:'Vòng 32',date:'2026-07-04',time:'01:00',home:'Nhất J',away:'Nhì H',venue:'Hard Rock Stadium, Miami Gardens',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Đội nhất bảng J gặp nhì bảng H — cuộc đối đầu của các ứng viên lớn.'},{src:'Tuổi Trẻ',txt:'Miami — thành phố bóng đá sôi động — chứng kiến trận knock-out đặc sắc.'}]},
+{id:'r32_15',group:'Vòng 32',date:'2026-07-04',time:'05:00',home:'Nhất K',away:'Nhì J',venue:'Estadio BBVA, Monterrey',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Đội nhất bảng K gặp nhì bảng J tại Monterrey — trận vòng 32 đầy kịch tính.'},{src:'Tuổi Trẻ',txt:'Monterrey đã chứng kiến Tunisia-Japan (trận thứ 1000) — giờ chứng kiến thêm lịch sử.'}]},
+{id:'r32_16',group:'Vòng 32',date:'2026-07-04',time:'08:30',home:'Nhì I',away:'Nhất K (dự phòng)',venue:'Arrowhead Stadium, Kansas City',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Trận vòng 32 cuối cùng — quyết định 16 đội tiến vào vòng trong.'},{src:'Tuổi Trẻ',txt:'Sau trận này, 16 đội xuất sắc nhất sẽ tranh tài ở vòng 16.'}]},
+
+// ===== VÒNG 16 — 8 trận (Jul 5-8) =====
+{id:'r16_01',group:'Vòng 16',date:'2026-07-06',time:'02:00',home:'TBD',away:'TBD',venue:'MetLife Stadium, East Rutherford',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Vòng 16 đội khai màn tại MetLife — sân sẽ tổ chức trận Chung kết.'},{src:'Tuổi Trẻ',txt:'Từ 32 còn lại 16 đội, đây là giai đoạn các ứng viên lớn bắt đầu lộ diện.'}]},
+{id:'r16_02',group:'Vòng 16',date:'2026-07-06',time:'08:00',home:'TBD',away:'TBD',venue:'AT&T Stadium, Arlington',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Vòng 16 tại Dallas — một trong những sân vận động lớn nhất của giải.'},{src:'Tuổi Trẻ',txt:'Mỗi trận vòng 16 đều có thể tạo địa chấn và kết thúc giấc mơ của một ông lớn.'}]},
+{id:'r16_03',group:'Vòng 16',date:'2026-07-07',time:'02:00',home:'TBD',away:'TBD',venue:'SoFi Stadium, Los Angeles',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Vòng 16 tại Los Angeles — thành phố của những ngôi sao.'},{src:'Tuổi Trẻ',txt:'SoFi Stadium tiếp tục là sân khấu của những trận cầu đỉnh cao.'}]},
+{id:'r16_04',group:'Vòng 16',date:'2026-07-07',time:'08:00',home:'TBD',away:'TBD',venue:'NRG Stadium, Houston',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Vòng 16 tại Houston — cuộc đối đầu của hai đội đã vượt qua vòng 32 đầy khó khăn.'},{src:'Tuổi Trẻ',txt:'Bóng đá World Cup ở giai đoạn này không có đội yếu.'}]},
+{id:'r16_05',group:'Vòng 16',date:'2026-07-08',time:'02:00',home:'TBD',away:'TBD',venue:'Mercedes-Benz Stadium, Atlanta',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Vòng 16 tại Atlanta — sân đã chứng kiến Tây Ban Nha đại thắng Cabo Verde.'},{src:'Tuổi Trẻ',txt:'Những bất ngờ vẫn có thể xảy ra — World Cup luôn đầy kịch tính.'}]},
+{id:'r16_06',group:'Vòng 16',date:'2026-07-08',time:'02:00',home:'TBD',away:'TBD',venue:'Lumen Field, Seattle',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Vòng 16 tại Seattle — một trong những trận đấu khó đoán nhất còn lại.'},{src:'Tuổi Trẻ',txt:'Người hâm mộ toàn thế giới hồi hộp chờ đợi kết quả vòng 16.'}]},
+{id:'r16_07',group:'Vòng 16',date:'2026-07-08',time:'08:00',home:'TBD',away:'TBD',venue:'Estadio Azteca, Mexico City',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Vòng 16 tại Azteca — sân huyền thoại tiếp tục chứng kiến lịch sử.'},{src:'Tuổi Trẻ',txt:'Azteca — sân 3 kỳ World Cup (1970, 1986, 2026) — luôn tạo ra khoảnh khắc đặc biệt.'}]},
+{id:'r16_08',group:'Vòng 16',date:'2026-07-09',time:'02:00',home:'TBD',away:'TBD',venue:'BC Place, Vancouver',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Trận vòng 16 cuối cùng tại Vancouver — xác định 8 đội vào tứ kết.'},{src:'Tuổi Trẻ',txt:'BC Place kết thúc vòng 16 — 8 đội xuất sắc nhất tiến vào tứ kết World Cup 2026.'}]},
+
+// ===== TỨ KẾT — 4 trận (Jul 10-12) =====
+{id:'qf_01',group:'Tứ kết',date:'2026-07-11',time:'02:00',home:'TBD',away:'TBD',venue:'MetLife Stadium, East Rutherford',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Tứ kết World Cup 2026 — một trong bốn trận quyết định ai vào bán kết.'},{src:'Tuổi Trẻ',txt:'Chỉ 8 đội còn lại, mỗi trận tứ kết đều là kiệt tác bóng đá thế giới.'}]},
+{id:'qf_02',group:'Tứ kết',date:'2026-07-11',time:'08:00',home:'TBD',away:'TBD',venue:'AT&T Stadium, Arlington',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Tứ kết tại Dallas — một trong những sân vận động ấn tượng nhất giải đấu.'},{src:'Tuổi Trẻ',txt:'Đây là giai đoạn mà các huyền thoại mới của bóng đá thế giới được sinh ra.'}]},
+{id:'qf_03',group:'Tứ kết',date:'2026-07-12',time:'02:00',home:'TBD',away:'TBD',venue:'SoFi Stadium, Los Angeles',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Tứ kết tại Los Angeles — thành phố của những ngôi sao, nơi diễn ra trận cầu của các ngôi sao.'},{src:'Tuổi Trẻ',txt:'World Cup đang đến hồi gay cấn nhất, mỗi trận tứ kết là kỷ niệm đáng nhớ mãi mãi.'}]},
+{id:'qf_04',group:'Tứ kết',date:'2026-07-13',time:'02:00',home:'TBD',away:'TBD',venue:'NRG Stadium, Houston',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Tứ kết cuối cùng tại Houston — quyết định 4 đội vào bán kết World Cup 2026.'},{src:'Tuổi Trẻ',txt:'Chỉ 4 đội sẽ còn lại sau vòng tứ kết — ai sẽ là người viết nên lịch sử?'}]},
+
+// ===== BÁN KẾT — 2 trận (Jul 15-16) =====
+{id:'sf_01',group:'Bán kết',date:'2026-07-15',time:'02:00',home:'TBD',away:'TBD',venue:'MetLife Stadium, East Rutherford',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Bán kết World Cup 2026 — một trong hai trận đấu quyết định ai được đá Chung kết.'},{src:'Tuổi Trẻ',txt:'Bán kết là trận đấu tàn khốc nhất — thắng vào Chung kết, thua là hết mơ vô địch.'}]},
+{id:'sf_02',group:'Bán kết',date:'2026-07-16',time:'02:00',home:'TBD',away:'TBD',venue:'AT&T Stadium, Arlington',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Bán kết thứ hai World Cup 2026 tại Dallas — một trong những trận cầu vĩ đại nhất năm 2026.'},{src:'Tuổi Trẻ',txt:'Hai đội vào Chung kết sẽ được xác định sau đêm nay — giấc mơ nào sẽ thành hiện thực?'}]},
+
+// ===== TRANH HẠNG BA (Jul 18) =====
+{id:'3rd',group:'Hạng 3',date:'2026-07-19',time:'02:00',home:'TBD',away:'TBD',venue:'Hard Rock Stadium, Miami Gardens',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'Trận tranh hạng ba World Cup 2026 — hai đội thua bán kết còn cơ hội giành huy chương đồng.'},{src:'Tuổi Trẻ',txt:'Dù không phải Chung kết nhưng trận hạng ba luôn mang ý nghĩa to lớn với hai đội tham dự.'}]},
+
+// ===== CHUNG KẾT (Jul 19, 3PM ET = 02:00 VN 20/7) =====
+{id:'final',group:'Chung kết',date:'2026-07-20',time:'02:00',home:'TBD',away:'TBD',venue:'MetLife Stadium, East Rutherford',odds:{h:40,d:25,a:35},press:[{src:'VnExpress',txt:'CHUNG KẾT FIFA WORLD CUP 2026 — Đêm lịch sử tại MetLife Stadium, New York/New Jersey!'},{src:'Tuổi Trẻ',txt:'World Cup 2026 khép lại với Chung kết tại MetLife — ai sẽ nâng chiếc cúp vàng lúc rạng sáng 20/7?'}]},
+];
+
+/* ====== CẤU HÌNH API ======
+   Lấy Gemini API key MIỄN PHÍ tại: https://aistudio.google.com/apikey
+   Dán vào dưới đây (AIza...). Để trống nếu chưa dùng AI. */
+const GEMINI_API_KEY = "AIzaSyDpMRbLQt_5Ox9J5EViReQLWZ_h1oiq3ZM";   // <-- INPUT GEMINI API KEY Ở ĐÂY
+const GEMINI_MODEL   = "gemini-2.5-flash";
+
+let S={members:['An','Bình','Chi','Dũng'],predictions:{},actualScores:{},aiAnalysis:{},autoResults:{},pressLinks:{},oddsCache:{}};
+function loadS(){try{const d=localStorage.getItem('wc2026v3');if(d)Object.assign(S,JSON.parse(d));}catch(e){}
+  if(!S.aiAnalysis)S.aiAnalysis={}; if(!S.autoResults)S.autoResults={}; if(!S.pressLinks)S.pressLinks={};}
+function saveS(path){
+  localStorage.setItem('wc2026v3',JSON.stringify(S));
+  if(window.__fbSave){
+    if(path) window.__fbSave(path, S[path]);
+    else ['members','predictions','actualScores','aiAnalysis','autoResults','pressLinks','oddsCache'].forEach(k=>window.__fbSave(k,S[k]||{}));
+  }
+}
+loadS();
+
+/* ====== TỶ SỐ ĐÃ XÁC NHẬN (cập nhật tay khi có kết quả chính thức) ======
+   Đây là seed data — chỉ điền nếu chưa có trong DB để không ghi đè kết quả
+   người dùng đã nhập tay. Thêm dòng mới khi có trận kết thúc. */
+const CONFIRMED_SCORES={
+  'm01':{home:2,away:0},  // Mexico 2-0 South Africa
+  'm02':{home:2,away:1},  // South Korea 2-1 Czechia
+  'm07':{home:1,away:1},  // Canada 1-1 Bosnia and Herzegovina
+  'm19':{home:4,away:1},  // USA 4-1 Paraguay
+};
+Object.entries(CONFIRMED_SCORES).forEach(([id,sc])=>{
+  if(!S.actualScores[id])S.actualScores[id]={...sc,auto:'confirmed'};
+});
+saveS();
+
+function nowVN(){return new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Ho_Chi_Minh'}));}
+function kickoff(m){const[y,mo,d]=m.date.split('-').map(Number);const[h,mi]=m.time.split(':').map(Number);return new Date(y,mo-1,d,h,mi);}
+function canEdit(m){return(kickoff(m)-nowVN())/60000>60;}
+function getStatus(m){const diff=(kickoff(m)-nowVN())/60000;if(diff>60)return'upcoming';if(diff>0)return'soon';if(diff>-110)return'live';return'finished';}
+function fmtDate(ds){const[y,mo,d]=ds.split('-').map(Number);const dt=new Date(y,mo-1,d);return['CN','T2','T3','T4','T5','T6','T7'][dt.getDay()]+', '+d+'/'+mo;}
+function getOutcome(h,a){return h>a?'home':a>h?'away':'draw';}
+/* ====== LUẬT TÍNH ĐIỂM MỚI ======
+   Vòng bảng: chỉ đoán kết quả (Thắng/Hòa/Thua) — đúng 0đ, sai -1đ
+   Sau vòng bảng: đoán tỷ số chính xác — đúng 0đ, sai -1đ
+   Xếp hạng: tổng điểm càng cao (ít âm) càng tốt
+   Giải cống hiến: người bị trừ nhiều nhất */
+const GROUP_STAGE_IDS=new Set(MATCHES.filter(m=>m.id.startsWith('m')).map(m=>m.id));
+function isGroupStage(mid){return GROUP_STAGE_IDS.has(mid);}
+
+function calcPts(pred,actual){
+  if(!pred||pred.outcome===undefined&&pred.home===undefined)return null;
+  if(!actual||actual.home===undefined)return null;
+  const actualOutcome=getOutcome(actual.home,actual.away);
+  if(pred.outcome!==undefined){
+    // Vòng bảng: chỉ đoán outcome
+    return pred.outcome===actualOutcome?0:-1;
+  }else{
+    // Knockout: đoán tỷ số chính xác
+    const ph=+pred.home,pa=+pred.away;
+    if(ph===actual.home&&pa===actual.away)return 0;
+    return -1;
+  }
+}
+
+let activeFilter='all';
+function renderFilters(){
+  const groups=[...new Set(MATCHES.map(m=>m.group))];
+  document.getElementById('filter-bar').innerHTML=
+    '<button class="filter-btn '+(activeFilter==='all'?'active':'')+'" onclick="setFilter(\'all\')">🌍 Tất cả</button>'
+    +groups.map(g=>'<button class="filter-btn '+(activeFilter===g?'active':'')+'" onclick="setFilter(\''+g+'\')">'+g+'</button>').join('');
+}
+function setFilter(f){activeFilter=f;renderFilters();renderMatches();}
+
+function renderMatches(){
+  const filtered=MATCHES.filter(m=>activeFilter==='all'||m.group===activeFilter)
+    .slice().sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  const predicted=MATCHES.filter(m=>Object.keys(S.predictions[m.id]||{}).length>0).length;
+  document.getElementById('hero-count').textContent=predicted+'/'+MATCHES.length+' trận có dự đoán';
+  if(!filtered.length){document.getElementById('match-list').innerHTML='<div class="empty"><div class="empty-icon">📅</div><p>Không có trận nào</p></div>';return;}
+  const byDate={};
+  filtered.forEach(m=>{(byDate[m.date]=byDate[m.date]||[]).push(m);});
+  // Sắp xếp ngày theo thứ tự thời gian
+  const sortedDates=Object.keys(byDate).sort();
+  document.getElementById('match-list').innerHTML=sortedDates.map(date=>
+    '<div class="date-label">📆 '+fmtDate(date)+'</div>'+byDate[date].map(renderCard).join('')).join('');
+}
+
+function renderCard(m){
+  const st=getStatus(m);
+  const preds=S.predictions[m.id]||{};
+  const cnt=Object.keys(preds).filter(k=>preds[k]&&(preds[k].home!==undefined||preds[k].outcome!==undefined)).length;
+  const actual=S.actualScores[m.id];
+  const timeBadge=st==='live'?'<span class="time-chip live">🔴 LIVE</span>':
+    st==='soon'?'<span class="time-chip soon">⚡ Sắp bắt đầu</span>':
+    st==='finished'?'<span class="time-chip finished">✓ Kết thúc</span>':
+    '<span class="time-chip">'+m.time+'</span>';
+  const vsBlock=actual
+    ?'<div class="vs-center"><div class="score-display">'+actual.home+' - '+actual.away+'</div></div>'
+    :'<div class="vs-center"><div class="vs-text">VS</div><div style="font-family:\'Bebas Neue\';font-size:14px;color:var(--text4)">'+m.time+'</div></div>';
+  return '<div class="match-card'+(cnt>0?' has-prediction':'')+'" onclick="openMatch(\''+m.id+'\')">'
+    +'<div class="match-meta">'
+    +'<span class="match-group-badge">'+m.group+'</span>'
+    +'<div style="display:flex;align-items:center;gap:6px">'
+    +(cnt>0?'<span style="font-size:11px;font-weight:700;color:var(--accent)">✏️ '+cnt+' dự đoán</span>':'')
+    +timeBadge+'</div></div>'
+    +'<div class="teams-row">'
+    +'<div class="team-block">'+flagImg(m.home)+'<span class="team-name">'+m.home+'</span></div>'
+    +vsBlock
+    +'<div class="team-block away"><span class="team-name">'+m.away+'</span>'+flagImg(m.away)+'</div>'
+    +'</div>'
+    +'<div class="odds-mini">'
+    +'<div class="odds-seg" style="width:'+m.odds.h+'%;background:#16A34A"></div>'
+    +'<div class="odds-seg" style="width:'+m.odds.d+'%;background:#9CA3AF"></div>'
+    +'<div class="odds-seg" style="width:'+m.odds.a+'%;background:#DC2626"></div>'
+    +'</div>'
+    +'<div class="card-bottom">'
+    +'<div class="pred-pill">🎯 '+cnt+'/'+S.members.length+' người đã dự đoán</div>'
+    +'<div class="hint-text">👆 Nhấn để xem & dự đoán</div>'
+    +'</div></div>';
+}
+
+let curMatch=null;
+function openMatch(id){
+  curMatch=MATCHES.find(m=>m.id===id);
+  if(!curMatch)return;
+  document.getElementById('modal-title').textContent=curMatch.home+' vs '+curMatch.away;
+  document.getElementById('modal-body').innerHTML=buildModal(curMatch);
+  document.getElementById('modal-overlay').classList.add('open');
+  if(!S.aiAnalysis[id] && GEMINI_API_KEY){ genAI(id,true); }
+  if(!S.pressLinks||!S.pressLinks[id]){ fetchPressLinks(curMatch); }
+}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open');renderMatches();renderDashboard();}
+function handleOverlayClick(e){if(e.target===document.getElementById('modal-overlay'))closeModal();}
+
+function buildModal(m){
+  const editable=canEdit(m);
+  const actual=S.actualScores[m.id];
+  let html='<div class="modal-teams">'
+    +'<div class="modal-team"><div class="modal-flag-wrap">'+flagImg(m.home,true)+'</div><div class="modal-team-name">'+m.home+'</div></div>'
+    +'<div class="modal-vs-block"><div class="modal-vs-text">VS</div><div style="font-size:12px;color:var(--text3);font-weight:600">'+fmtDate(m.date)+' · '+m.time+'</div><div style="font-size:11px;color:var(--text4);margin-top:3px">📍 '+m.venue+'</div></div>'
+    +'<div class="modal-team"><div class="modal-flag-wrap">'+flagImg(m.away,true)+'</div><div class="modal-team-name">'+m.away+'</div></div>'
+    +'</div>';
+
+  html+='<div class="info-card"><div class="info-card-title">📊 Tỷ lệ thắng/thua · Google</div>'
+    +'<div class="odds-grid">'
+    +'<div class="odds-item"><div class="odds-item-label">'+m.home+' thắng</div><div class="odds-item-val w">'+m.odds.h+'%</div></div>'
+    +'<div class="odds-item"><div class="odds-item-label">Hòa</div><div class="odds-item-val d">'+m.odds.d+'%</div></div>'
+    +'<div class="odds-item"><div class="odds-item-label">'+m.away+' thắng</div><div class="odds-item-val l">'+m.odds.a+'%</div></div>'
+    +'</div>'
+    +'<div class="odds-bar-big">'
+    +'<div class="odds-seg" style="width:'+m.odds.h+'%;background:#16A34A"></div>'
+    +'<div class="odds-seg" style="width:'+m.odds.d+'%;background:#9CA3AF"></div>'
+    +'<div class="odds-seg" style="width:'+m.odds.a+'%;background:#DC2626"></div>'
+    +'</div></div>';
+
+  html+='<div class="info-card"><div class="info-card-title">📰 Nhận định báo Việt Nam</div>';
+  m.press.forEach(p=>{html+='<div class="press-item"><div class="press-src">'+p.src+'</div><div class="press-txt">'+p.txt+'</div>'
+    +'<a class="press-more" href="'+pressUrl(p,m)+'" data-src="'+escapeHtml(p.src)+'" data-mid="'+m.id+'" target="_blank" rel="noopener">Xem thêm ↗</a>'
+    +'</div>';});
+  html+='</div>';
+
+  // ===== Nhận định AI (Gemini) =====
+  const ai=S.aiAnalysis[m.id];
+  html+='<div class="info-card ai-card" id="ai-card-'+m.id+'">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">'
+    +'<div class="info-card-title" style="color:#7C3AED;margin-bottom:0">🤖 Nhận định AI (Gemini)</div>'
+    +(ai?'<button class="btn-ai-refresh" onclick="regenAI(\''+m.id+'\')" title="Tạo lại">🔄</button>':'')
+    +'</div>'
+    +'<div id="ai-body-'+m.id+'">'
+    +(ai
+        ? '<div class="ai-txt">'+escapeHtml(ai)+'</div>'
+        : '<div class="ai-empty">Chưa có nhận định AI cho trận này.</div>'
+          +'<button class="btn-ai" onclick="genAI(\''+m.id+'\')">✨ Tạo nhận định AI</button>')
+    +'</div></div>';
+
+  html+='<div class="actual-card"><div class="actual-title">⚽ Kết quả thực tế</div>'
+    +'<div class="actual-row">'
+    +'<span style="font-size:12px;font-weight:700;color:var(--text2)">'+m.home+'</span>'
+    +'<input class="score-inp" id="act-h" type="number" min="0" max="20" value="'+(actual?actual.home:'')+'" placeholder="-">'
+    +'<span class="score-colon">:</span>'
+    +'<input class="score-inp" id="act-a" type="number" min="0" max="20" value="'+(actual?actual.away:'')+'" placeholder="-">'
+    +'<span style="font-size:12px;font-weight:700;color:var(--text2)">'+m.away+'</span>'
+    +'<button class="btn-save-actual" onclick="saveActual(\''+m.id+'\')">💾 Lưu kết quả</button>'
+    +'</div>'
+    +'<div style="font-size:11px;color:var(--accent2);margin-top:6px">Nhập sau khi trận kết thúc để tính điểm tự động</div>'
+    +'</div>';
+
+  html+='<div class="pred-card"><div class="pred-header">'
+    +'<div class="pred-title">🎯 Dự đoán của team</div>'
+    +(editable?'<span class="lock-badge lock-open">🟢 Đang mở</span>':'<span class="lock-badge lock-locked">🔒 Đã khóa</span>')
+    +'</div>';
+
+  const isGroup=isGroupStage(m.id);
+
+  S.members.forEach(mb=>{
+    const pred=S.predictions[m.id]&&S.predictions[m.id][mb];
+    const pts=calcPts(pred,actual);
+    const ptsHtml=pts===null?'':pts===0
+      ?'<span class="pts-chip pts-1">✅ 0đ</span>'
+      :'<span class="pts-chip pts-0">❌ -1đ</span>';
+
+    html+='<div class="member-row">'
+      +'<div class="member-av">'+mb[0]+'</div>'
+      +'<div class="member-info"><div class="member-nm">'+mb+'</div>'
+      +'<div class="member-st">'+(pred?'Đã dự đoán':'Chưa dự đoán')+'</div></div>'
+      +ptsHtml;
+
+    if(isGroup){
+      // Vòng bảng: 3 nút W / Hòa / T
+      const cur=pred?.outcome;
+      const opts=[
+        {v:'home',  label:m.home.length>8?m.home.slice(0,8)+'…':m.home, cls:'btn-wdl home'},
+        {v:'draw',  label:'Hòa', cls:'btn-wdl draw'},
+        {v:'away',  label:m.away.length>8?m.away.slice(0,8)+'…':m.away, cls:'btn-wdl away'},
+      ];
+      html+='<div class="wdl-group">';
+      opts.forEach(o=>{
+        const sel=cur===o.v?' selected':'';
+        if(editable)
+          html+='<button class="'+o.cls+sel+'" onclick="savePredOutcome(\''+m.id+'\',\''+mb+'\',\''+o.v+'\')">'+o.label+'</button>';
+        else
+          html+='<button class="'+o.cls+sel+'" disabled>'+o.label+'</button>';
+      });
+      html+='</div>';
+    }else{
+      // Knockout: nhập tỷ số
+      html+='<div class="score-input-group">'
+        +'<input class="pred-inp" id="pi-'+mb+'-h" type="number" min="0" max="20" value="'+(pred&&pred.home!==undefined?pred.home:'')+'" placeholder="-"'+(editable?'':' disabled')+'>'
+        +'<span class="pred-sep">:</span>'
+        +'<input class="pred-inp" id="pi-'+mb+'-a" type="number" min="0" max="20" value="'+(pred&&pred.away!==undefined?pred.away:'')+'" placeholder="-"'+(editable?'':' disabled')+'>'
+        +'</div>'
+        +'<button class="btn-save-pred" onclick="savePred(\''+m.id+'\',\''+mb+'\')"'+(editable?'':' disabled')+'>Lưu</button>';
+    }
+    html+='</div>';
+  });
+  html+='</div>';
+  return html;
+}
+
+function savePredOutcome(mid,mb,outcome){
+  const m=MATCHES.find(x=>x.id===mid);
+  if(!canEdit(m)){alert('Đã quá thời hạn 1 tiếng trước khi bóng lăn!');return;}
+  if(!S.predictions[mid])S.predictions[mid]={};
+  S.predictions[mid][mb]={outcome,savedAt:new Date().toISOString()};
+  saveS('predictions');
+  document.getElementById('modal-body').innerHTML=buildModal(m);
+  if(!S.aiAnalysis[mid]&&GEMINI_API_KEY)genAI(mid,true);
+}
+function savePred(mid,mb){
+  const m=MATCHES.find(x=>x.id===mid);
+  if(!canEdit(m)){alert('Đã quá thời hạn 1 tiếng trước khi bóng lăn!');return;}
+  const h=document.getElementById('pi-'+mb+'-h').value;
+  const a=document.getElementById('pi-'+mb+'-a').value;
+  if(h===''||a===''){alert('Vui lòng nhập đủ tỷ số!');return;}
+  if(!S.predictions[mid])S.predictions[mid]={};
+  S.predictions[mid][mb]={home:+h,away:+a,savedAt:new Date().toISOString()};
+  saveS('predictions');
+  document.getElementById('modal-body').innerHTML=buildModal(m);
+}
+function saveActual(mid){
+  const h=document.getElementById('act-h').value;
+  const a=document.getElementById('act-a').value;
+  if(h===''||a===''){alert('Nhập tỷ số!');return;}
+  S.actualScores[mid]={home:+h,away:+a};
+  saveS('actualScores');
+  document.getElementById('modal-body').innerHTML=buildModal(MATCHES.find(x=>x.id===mid));
+  renderDashboard();
+}
+
+/* ====== TÌM LINK BÀI BÁO THẬT (Gemini + Google Search) ======
+   Khi mở modal, tự động tìm link bài nhận định trận đấu trên báo VN,
+   lưu cache vào S.pressLinks để lần sau không gọi lại. */
+async function fetchPressLinks(m){
+  if(!GEMINI_API_KEY)return;
+  if(S.pressLinks&&S.pressLinks[m.id])return; // đã có cache
+  try{
+    const prompt='Tìm trên Google các bài báo nhận định, preview hoặc phân tích trận đấu '
+      +m.home+' vs '+m.away+' World Cup 2026 trên các trang: vnexpress.net, tuoitre.vn, thanhnien.vn, dantri.com.vn, bongdaplus.vn. '
+      +'Trả về DUY NHẤT một JSON object, không markdown, dạng: '
+      +'{"VnExpress":"url hoặc null","Tuổi Trẻ":"url hoặc null","Thanh Niên":"url hoặc null","Dân Trí":"url hoặc null","Bóng Đá+":"url hoặc null"}. '
+      +'Chỉ điền URL nếu tìm thấy bài thật, không bịa URL.';
+    const url='https://generativelanguage.googleapis.com/v1beta/models/'+GEMINI_MODEL+':generateContent?key='+GEMINI_API_KEY;
+    const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{parts:[{text:prompt}]}],tools:[{google_search:{}}],
+        generationConfig:{temperature:0,maxOutputTokens:1024}})});
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok)return;
+    let text=(data?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||'').trim();
+    text=text.replace(/```json|```/g,'').trim();
+    const jm=text.match(/\{[\s\S]*\}/);
+    if(!jm)return;
+    const links=JSON.parse(jm[0]);
+    if(!S.pressLinks)S.pressLinks={};
+    S.pressLinks[m.id]=links;
+    saveS('pressLinks');
+    // Cập nhật các nút Xem thêm đang hiển thị
+    m.press.forEach(p=>{
+      const url=links[p.src];
+      if(url){
+        const els=document.querySelectorAll('a.press-more[data-src="'+p.src+'"][data-mid="'+m.id+'"]');
+        els.forEach(el=>{el.href=url;});
+      }
+    });
+  }catch(e){}
+}
+
+/* ====== NHẬN ĐỊNH AI (Gemini) ======
+   Gọi Google Gemini API (miễn phí tại aistudio.google.com), lưu cache vào DB tránh hao quota. */
+async function genAI(mid,silent){
+  const m=MATCHES.find(x=>x.id===mid);
+  if(!m)return;
+  if(S.aiAnalysis[mid]){
+    const b=document.getElementById('ai-body-'+mid);
+    if(b)b.innerHTML='<div class="ai-txt">'+escapeHtml(S.aiAnalysis[mid])+'</div>';
+    return;
+  }
+  const body=document.getElementById('ai-body-'+mid);
+  if(!GEMINI_API_KEY){
+    if(body&&!silent)body.innerHTML='<div class="ai-empty">⚠️ Chưa cấu hình Gemini API key trong source code.<br>Lấy key miễn phí tại <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a></div>';
+    return;
+  }
+  if(body)body.innerHTML='<div class="ai-loading">🤖 AI đang phân tích trận đấu...</div>';
+  const home=m.home, away=m.away;
+  const prompt='Bạn là chuyên gia phân tích bóng đá. Hãy tổng hợp và đưa ra nhận định chuyên sâu bằng tiếng Việt (150 chữ) cho trận đấu: '+home+' vs '+away+' tại FIFA World Cup 2026.\nHãy phân tích các khía cạnh:\n1. Phong độ gần đây và lực lượng của cả hai đội\n2. Lịch sử đối đầu (head-to-head)\n3. Điểm mạnh/yếu, chiến thuật dự kiến\n4. Các cầu thủ nguy hiểm cần chú ý\n5. Nhận định và dự đoán kết quả\nViết như một chuyên gia bóng đá Việt Nam, súc tích và chuyên nghiệp. Chỉ trả lời bằng đoạn văn phân tích, không dùng đầu mục số thứ tự';
+  try{
+    const url='https://generativelanguage.googleapis.com/v1beta/models/'+GEMINI_MODEL+':generateContent?key='+GEMINI_API_KEY;
+    const res=await fetch(url,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        contents:[{parts:[{text:prompt}]}],
+        generationConfig:{
+          maxOutputTokens:2048,
+          temperature:0.7,
+          thinkingConfig:{thinkingBudget:0}  /* tắt thinking để dành token cho câu trả lời */
+        }
+      })
+    });
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok){
+      const msg=(data?.error?.message)||('HTTP '+res.status);
+      throw new Error(msg);
+    }
+    const cand=data?.candidates?.[0];
+    let text=cand?.content?.parts?.map(p=>p.text||'').join('').trim();
+    /* Nếu bị cắt do hết token mà vẫn rỗng -> báo lỗi rõ */
+    if(!text){
+      if(cand?.finishReason==='MAX_TOKENS')throw new Error('Phản hồi quá dài, thử lại');
+      if(cand?.finishReason==='SAFETY')throw new Error('Bị chặn bởi bộ lọc an toàn');
+      throw new Error('Không nhận được phản hồi từ AI');
+    }
+    S.aiAnalysis[mid]=text; saveS('aiAnalysis');
+    const b2=document.getElementById('ai-body-'+mid);
+    if(b2)b2.innerHTML='<div class="ai-txt">'+escapeHtml(text)+'</div>';
+  }catch(err){
+    const b3=document.getElementById('ai-body-'+mid);
+    if(b3)b3.innerHTML='<div class="ai-empty">❌ Lỗi gọi AI: '+err.message+'</div>'
+      +'<button class="btn-ai" onclick="genAI(\''+mid+'\')">🔁 Thử lại</button>';
+  }
+}
+
+/* ====== TỰ ĐỘNG CẬP NHẬT KẾT QUẢ TRẬN ĐÃ DIỄN RA ======
+   Dùng Gemini API + Google Search grounding: Gemini tự tra Google lấy tỷ số chính thức,
+   trả về JSON, lưu localStorage. Lần sau mở tool không gọi lại trận đã có kết quả. */
+
+let fetchingResults=false;
+async function autoFetchResults(manual){
+  if(fetchingResults)return; fetchingResults=true;
+  const setStatus=t=>{const el=document.getElementById('fetch-status');if(el)el.textContent=t;};
+  setStatus('⏳ Đang lấy tỷ số từ Google...');
+
+  const need=MATCHES.filter(m=>getStatus(m)==='finished'
+    && !S.actualScores[m.id] && (manual||!S.autoResults[m.id+'_done']));
+
+  if(need.length===0){ setStatus('✅ Không có trận nào cần cập nhật.'); fetchingResults=false; return; }
+
+  if(!GEMINI_API_KEY){
+    setStatus('⚠️ Chưa cấu hình Gemini API key để lấy tỷ số tự động.');
+    fetchingResults=false; return;
+  }
+
+  /* Tạo danh sách trận hỏi Gemini trong 1 request */
+  const list=need.map(m=>m.id+': '+m.home+' vs '+m.away+' ('+m.date+')').join('\n');
+  const prompt='Tìm trên Google kết quả tỷ số chính thức (FT - full time) các trận FIFA World Cup 2026 sau đây. '
+    +'Trả về DUY NHẤT một mảng JSON, không kèm giải thích, không markdown. '
+    +'Mỗi phần tử dạng {"id":"mã","home":số_bàn_đội_nhà,"away":số_bàn_đội_khách}. '
+    +'Nếu trận chưa đá xong hoặc không tìm thấy kết quả chắc chắn, BỎ QUA trận đó (không đưa vào mảng). '
+    +'Tuyệt đối không bịa tỷ số.\n\nDanh sách trận:\n'+list;
+
+  let found=0;
+  try{
+    const url='https://generativelanguage.googleapis.com/v1beta/models/'+GEMINI_MODEL+':generateContent?key='+GEMINI_API_KEY;
+    const res=await fetch(url,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        contents:[{parts:[{text:prompt}]}],
+        tools:[{google_search:{}}],
+        generationConfig:{temperature:0,maxOutputTokens:4096}
+      })
+    });
+    const data=await res.json().catch(()=>({}));
+    console.log('[AutoFetch] status:', res.status, 'finishReason:', data?.candidates?.[0]?.finishReason);
+    if(!res.ok){
+      const msg=(data?.error?.message)||('HTTP '+res.status);
+      console.error('[AutoFetch] API error:', JSON.stringify(data?.error));
+      throw new Error(msg);
+    }
+
+    let text=data?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('').trim()||'';
+    console.log('[AutoFetch] raw response:', text.slice(0,300));
+    /* Bóc JSON khỏi text (bỏ ```json fences nếu có) */
+    text=text.replace(/```json|```/g,'').trim();
+    const jm=text.match(/\[[\s\S]*\]/);
+    if(!jm){
+      console.warn('[AutoFetch] No JSON array found in response:', text.slice(0,300));
+      throw new Error('Không đọc được dữ liệu tỷ số — xem Console F12 để biết chi tiết');
+    }
+    const arr=JSON.parse(jm[0]);
+    console.log('[AutoFetch] parsed scores:', arr);
+
+    arr.forEach(r=>{
+      const m=need.find(x=>x.id===r.id);
+      if(m && Number.isInteger(r.home) && Number.isInteger(r.away)){
+        S.actualScores[m.id]={home:r.home,away:r.away,auto:'gemini'};
+        found++;
+      }
+    });
+    /* Đánh dấu đã thử tất cả trận trong đợt này */
+    need.forEach(m=>{S.autoResults[m.id+'_done']=true;});
+
+    saveS('actualScores'); renderMatches();
+    if(document.getElementById('page-dashboard').classList.contains('active'))renderDashboard();
+
+    if(found)setStatus('✅ Đã cập nhật '+found+'/'+need.length+' trận từ Google.'
+      +(found<need.length?' Các trận còn lại chưa có kết quả.':''));
+    else setStatus('ℹ️ Chưa tìm thấy kết quả chính thức cho các trận này trên Google.');
+  }catch(err){
+    console.error('[AutoFetch] catch:', err.message);
+    /* KHÔNG đánh dấu _done khi lỗi → nhấn "🔄 Cập nhật kết quả" sẽ thử lại */
+    setStatus('❌ Lỗi: '+err.message);
+  }
+  fetchingResults=false;
+}
+
+function renderDashboard(){
+  const stats=S.members.map(mb=>{
+    let pts=0,correct=0,wrong=0,skipped=0;
+    MATCHES.forEach(m=>{
+      const pred=S.predictions[m.id]&&S.predictions[m.id][mb];
+      const actual=S.actualScores[m.id];
+      if(!actual)return; // trận chưa có kết quả → bỏ qua
+      if(!pred){pts+=-1;wrong++;return;} // không vote = sai → -1đ
+      const p=calcPts(pred,actual);
+      if(p===null)return;
+      pts+=p; if(p===0)correct++; else wrong++;
+    });
+    return{name:mb,pts,correct,wrong,skipped};
+  }).sort((a,b)=>b.pts-a.pts||a.wrong-b.wrong);
+
+  // Giải cống hiến = người sai nhiều nhất (wrong cao nhất)
+  const maxWrong=Math.max(...stats.map(s=>s.wrong));
+  const congHienNames=maxWrong>0?new Set(stats.filter(s=>s.wrong===maxWrong).map(s=>s.name)):new Set();
+
+  document.getElementById('leaderboard-grid').innerHTML=stats.map((s,i)=>{
+    const isCongHien=congHienNames.has(s.name)&&s.wrong>0;
+    return '<div class="leader-card rank-'+(i<3?i+1:0)+'">'
+    +'<div class="leader-rank-txt">'+(i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1))+'</div>'
+    +(isCongHien?'<div class="cong-hien-badge">🎭 Cống hiến</div>':'')
+    +'<div class="leader-av">'+s.name[0]+'</div>'
+    +'<div class="leader-nm">'+s.name+'</div>'
+    +'<div class="leader-pts-big" style="color:'+(s.pts<0?'#DC2626':s.pts===0?'var(--text2)':'#16A34A')+'">'+s.pts+'</div>'
+    +'<div class="leader-pts-label">điểm</div>'
+    +'<div class="leader-stat-row">'
+    +'<div><span style="color:#16A34A">'+s.correct+'</span>Đúng</div>'
+    +'<div><span style="color:#DC2626">'+s.wrong+'</span>Sai (-'+s.wrong+'đ)</div>'
+    +'</div></div>';
+  }).join('');
+
+  const finished=MATCHES.filter(m=>S.actualScores[m.id])
+    .slice().sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  if(!finished.length){document.getElementById('history-wrap').innerHTML='<div class="empty"><div class="empty-icon">⏳</div><p>Chưa có trận nào kết thúc</p></div>';return;}
+  let tbl='<div class="hist-wrap"><table class="hist-table"><thead><tr><th>Trận đấu</th><th>Kết quả</th>'
+    +S.members.map(m=>'<th>'+m+'</th>').join('')+'</tr></thead><tbody>';
+  finished.forEach(m=>{
+    const actual=S.actualScores[m.id];
+    tbl+='<tr><td style="white-space:nowrap"><div style="display:flex;align-items:center;gap:6px">'
+      +flagImg(m.home)+'<span style="font-size:12px;font-weight:700">'+m.home+'</span>'
+      +'<span style="font-family:Bebas Neue;color:var(--text3)">VS</span>'
+      +'<span style="font-size:12px;font-weight:700">'+m.away+'</span>'+flagImg(m.away)
+      +'</div></td><td><span class="result-score">'+actual.home+'-'+actual.away+'</span></td>'
+      +S.members.map(mb=>{
+        const pred=S.predictions[m.id]&&S.predictions[m.id][mb];
+        if(!pred)return'<td><span class="r-wrong">❌ Bỏ trống</span></td>';
+        const pts=calcPts(pred,actual);
+        const label=pred.outcome
+          ?({home:'Thắng',draw:'Hòa',away:'Thua'}[pred.outcome]||pred.outcome)
+          :(pred.home+'-'+pred.away);
+        return'<td><span class="'+(pts===0?'r-win':'r-wrong')+'">'+(pts===0?'✅':'❌')+' '+label+'</span></td>';
+      }).join('')+'</tr>';
+  });
+  tbl+='</tbody></table></div>';
+  document.getElementById('history-wrap').innerHTML=tbl;
+}
+
+function renderSettings(){
+  document.getElementById('member-tags').innerHTML=S.members.map(m=>
+    '<div class="mtag">'+m+'<button onclick="removeMember(\''+m+'\')">&#x2715;</button></div>').join('');
+}
+function addMember(){
+  const inp=document.getElementById('new-member-input');
+  const name=inp.value.trim();
+  if(!name)return;
+  if(S.members.includes(name)){alert('Tên đã tồn tại!');return;}
+  S.members.push(name);saveS('members');inp.value='';renderSettings();
+}
+function removeMember(name){
+  const pw=prompt('🔒 Nhập mật khẩu admin để xóa thành viên:');
+  if(pw===null)return;
+  if(pw!=='Qui'){alert('❌ Sai mật khẩu! Chỉ admin mới được xóa thành viên.');return;}
+  if(!confirm('Xóa "'+name+'"?'))return;
+  S.members=S.members.filter(m=>m!==name);saveS('members');renderSettings();
+}
+
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='dashboard')renderDashboard();
+  if(id==='settings')renderSettings();
+}
+
+async function regenAI(mid){
+  delete S.aiAnalysis[mid]; saveS('aiAnalysis');
+  await genAI(mid);
+}
+function exportData(){
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='wc2026_backup_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click(); URL.revokeObjectURL(a.href);
+}
+function importData(input){
+  const file=input.files[0]; if(!file)return;
+  const rd=new FileReader();
+  rd.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!data||typeof data!=='object')throw new Error('File không hợp lệ');
+      if(!confirm('Khôi phục dữ liệu từ file backup? Dữ liệu hiện tại sẽ bị ghi đè.'))return;
+      S={members:[],predictions:{},actualScores:{},aiAnalysis:{},autoResults:{}};
+      Object.assign(S,data);
+      if(!S.aiAnalysis)S.aiAnalysis={}; if(!S.autoResults)S.autoResults={};
+      if(!S.members||!S.members.length)S.members=['An','Bình','Chi','Dũng'];
+      saveS();
+      renderFilters();renderMatches();renderDashboard();renderSettings();
+      alert('✅ Khôi phục dữ liệu thành công!');
+    }catch(err){alert('❌ Lỗi import: '+err.message);}
+  };
+  rd.readAsText(file);
+  input.value='';
+}
+
+renderFilters();renderMatches();renderSettings();
+autoFetchResults();   // tự cập nhật kết quả trận đã diễn ra khi mở app
+
+/* ====== TỰ ĐỘNG CẬP NHẬT TỶ LỆ THẮNG/HÒA/THUA TỪ GOOGLE ======
+   - Chỉ chạy khi nhấn nút "📊 Cập nhật tỷ lệ"
+   - Cache kết quả vào Firebase (key: oddsCache) — chỉ fetch lại sau 24h
+   - Fetch theo batch 10 trận/lần để tránh vượt token limit Gemini */
+
+let fetchingOdds = false;
+
+async function fetchOdds(){
+  if(fetchingOdds){alert('Đang cập nhật, vui lòng chờ...');return;}
+  if(!GEMINI_API_KEY){alert('Chưa cấu hình Gemini API key!');return;}
+
+  const setStatus = t => {const el=document.getElementById('fetch-status');if(el)el.textContent=t;};
+
+  // Kiểm tra cache 24h từ Firebase/localStorage
+  const CACHE_KEY = 'oddsCache';
+  const CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
+  try{
+    const cached = S[CACHE_KEY];
+    if(cached && cached.ts && (Date.now()-cached.ts) < CACHE_TTL){
+      // Còn cache → áp dụng luôn không fetch lại
+      applyOddsCache(cached.data);
+      setStatus('📊 Dùng tỷ lệ đã cache (cập nhật lúc '+new Date(cached.ts).toLocaleTimeString('vi-VN')+') — nhấn lại sau '+
+        Math.round((CACHE_TTL-(Date.now()-cached.ts))/3600000)+'h để làm mới.');
+      return;
+    }
+  }catch(e){}
+
+  fetchingOdds = true;
+  setStatus('📊 Đang lấy tỷ lệ từ Google...');
+
+  // Chỉ fetch các trận sắp diễn ra và đang diễn ra (bỏ trận đã xong)
+  const targets = MATCHES.filter(m => {
+    const st = getStatus(m);
+    return st === 'upcoming' || st === 'soon';
+  });
+
+  if(!targets.length){
+    setStatus('✅ Không có trận nào cần cập nhật tỷ lệ.');
+    fetchingOdds = false; return;
+  }
+
+  // Chia batch 10 trận
+  const BATCH = 10;
+  const allOdds = {};
+  let batchNum = 0;
+
+  for(let i = 0; i < targets.length; i += BATCH){
+    batchNum++;
+    const batch = targets.slice(i, i + BATCH);
+    setStatus('📊 Đang fetch batch '+batchNum+'/'+Math.ceil(targets.length/BATCH)+'...');
+
+    const list = batch.map(m => m.id+': '+m.home+' vs '+m.away).join('
+');
+    const prompt =
+      'Tìm trên Google xác suất thắng/hòa/thua (win probability %) của các trận FIFA World Cup 2026 sau. '
+      +'Nguồn ưu tiên: Google Search "win probability" hoặc các trang thể thao uy tín. '
+      +'Trả về DUY NHẤT một mảng JSON, không markdown, không giải thích. '
+      +'Mỗi phần tử: {"id":"mã","h":số_nguyên,"d":số_nguyên,"a":số_nguyên} với h+d+a=100. '
+      +'Nếu không tìm được xác suất chính xác cho trận nào, BỎ QUA trận đó. '
+      +'Tuyệt đối không bịa số.
+
+Danh sách:
+'+list;
+
+    try{
+      const url = 'https://generativelanguage.googleapis.com/v1beta/models/'+GEMINI_MODEL+':generateContent?key='+GEMINI_API_KEY;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          contents: [{parts:[{text:prompt}]}],
+          tools: [{google_search:{}}],
+          generationConfig: {temperature:0, maxOutputTokens:2048}
+        })
+      });
+      const data = await res.json().catch(()=>({}));
+      if(!res.ok) throw new Error((data?.error?.message)||'HTTP '+res.status);
+
+      let text = (data?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||'').trim();
+      text = text.replace(/```json|```/g,'').trim();
+      const jm = text.match(/\[[\s\S]*\]/);
+      if(!jm) throw new Error('Không đọc được JSON từ Gemini');
+
+      const arr = JSON.parse(jm[0]);
+      arr.forEach(r => {
+        if(r.id && Number.isInteger(r.h) && Number.isInteger(r.d) && Number.isInteger(r.a)){
+          // Normalize về 100%
+          const total = r.h + r.d + r.a;
+          if(total > 0) allOdds[r.id] = {
+            h: Math.round(r.h*100/total),
+            d: Math.round(r.d*100/total),
+            a: 100 - Math.round(r.h*100/total) - Math.round(r.d*100/total)
+          };
+        }
+      });
+      // Delay nhỏ giữa các batch để tránh rate limit
+      if(i + BATCH < targets.length) await new Promise(r=>setTimeout(r,1200));
+    }catch(e){
+      console.warn('[fetchOdds] batch '+batchNum+' error:', e.message);
+      // Tiếp tục batch tiếp theo dù 1 batch lỗi
+    }
+  }
+
+  const found = Object.keys(allOdds).length;
+  if(!found){
+    setStatus('❌ Không lấy được tỷ lệ nào. Thử lại sau.');
+    fetchingOdds = false; return;
+  }
+
+  // Lưu cache vào S và Firebase
+  if(!S.oddsCache) S.oddsCache = {};
+  S.oddsCache = {ts: Date.now(), data: allOdds};
+  saveS('oddsCache');
+
+  // Áp dụng vào MATCHES
+  applyOddsCache(allOdds);
+  setStatus('✅ Đã cập nhật tỷ lệ cho '+found+'/'+targets.length+' trận từ Google. Cache 24h.');
+  renderMatches();
+  fetchingOdds = false;
+}
+
+function applyOddsCache(oddsMap){
+  Object.entries(oddsMap).forEach(([id, odds])=>{
+    const m = MATCHES.find(x=>x.id===id);
+    if(m) m.odds = odds;
+  });
+  renderMatches();
+}
+
+// Áp dụng cache cũ ngay khi load (nếu có, không cần fetch lại)
+(function applyCachedOddsOnLoad(){
+  try{
+    const cached = S.oddsCache;
+    if(cached && cached.data) applyOddsCache(cached.data);
+  }catch(e){}
+})();
+
+
+</script>
+</body>
+</html>
