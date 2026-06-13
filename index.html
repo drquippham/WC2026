@@ -1111,6 +1111,9 @@ function addMember(){
   S.members.push(name);saveS('members');inp.value='';renderSettings();
 }
 function removeMember(name){
+  const pw=prompt('🔒 Nhập mật khẩu admin để xóa thành viên:');
+  if(pw===null)return;
+  if(pw!=='Qui'){alert('❌ Sai mật khẩu! Chỉ admin mới được xóa thành viên.');return;}
   if(!confirm('Xóa "'+name+'"?'))return;
   S.members=S.members.filter(m=>m!==name);saveS('members');renderSettings();
 }
