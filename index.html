@@ -253,6 +253,12 @@ window.__firebaseInit = async function(databaseURL) {
   db = getDatabase(app);
   dbReady = true;
 
+  // Lấy Gemini API key từ Firebase (ẩn khỏi source code)
+  try {
+    const keySnap = await get(ref(db, 'wc2026/config/gemini_key'));
+    if (keySnap.exists()) window.GEMINI_API_KEY = keySnap.val();
+  } catch(e) {}
+
   // Lắng nghe thay đổi real-time từ Firebase
   const dbRef = ref(db, 'wc2026');
   onValue(dbRef, (snapshot) => {
@@ -601,7 +607,8 @@ const MATCHES=[
 /* ====== CẤU HÌNH API ======
    Lấy Gemini API key MIỄN PHÍ tại: https://aistudio.google.com/apikey
    Dán vào dưới đây (AIza...). Để trống nếu chưa dùng AI. */
-const GEMINI_API_KEY = "AQ.Ab8RN6JwPTv6x021Vi8sqgoTCMAeSTpeecIoiF9L85QyUSXbZg";   // <-- INPUT GEMINI API KEY Ở ĐÂY
+// Gemini API key được load từ Firebase (wc2026/config/gemini_key) — không hardcode trong source
+window.GEMINI_API_KEY = "";
 const GEMINI_MODEL   = "gemini-2.5-flash";
 
 let S={members:['An','Bình','Chi','Dũng'],predictions:{},actualScores:{},aiAnalysis:{},autoResults:{},pressLinks:{}};
@@ -723,7 +730,7 @@ function openMatch(id){
   document.getElementById('modal-title').textContent=curMatch.home+' vs '+curMatch.away;
   document.getElementById('modal-body').innerHTML=buildModal(curMatch);
   document.getElementById('modal-overlay').classList.add('open');
-  if(!S.aiAnalysis[id] && GEMINI_API_KEY){ genAI(id,true); }
+  if(!S.aiAnalysis[id] && window.GEMINI_API_KEY){ genAI(id,true); }
   if(!S.pressLinks||!S.pressLinks[id]){ fetchPressLinks(curMatch); }
 }
 function closeModal(){document.getElementById('modal-overlay').classList.remove('open');renderMatches();renderDashboard();}
@@ -841,7 +848,7 @@ function savePredOutcome(mid,mb,outcome){
   S.predictions[mid][mb]={outcome,savedAt:new Date().toISOString()};
   saveS('predictions');
   document.getElementById('modal-body').innerHTML=buildModal(m);
-  if(!S.aiAnalysis[mid]&&GEMINI_API_KEY)genAI(mid,true);
+  if(!S.aiAnalysis[mid]&&window.GEMINI_API_KEY)genAI(mid,true);
 }
 function savePred(mid,mb){
   const m=MATCHES.find(x=>x.id===mid);
@@ -868,7 +875,7 @@ function saveActual(mid){
    Khi mở modal, tự động tìm link bài nhận định trận đấu trên báo VN,
    lưu cache vào S.pressLinks để lần sau không gọi lại. */
 async function fetchPressLinks(m){
-  if(!GEMINI_API_KEY)return;
+  if(!window.GEMINI_API_KEY)return;
   if(S.pressLinks&&S.pressLinks[m.id])return; // đã có cache
   try{
     const prompt='Tìm trên Google các bài báo nhận định, preview hoặc phân tích trận đấu '
@@ -876,7 +883,7 @@ async function fetchPressLinks(m){
       +'Trả về DUY NHẤT một JSON object, không markdown, dạng: '
       +'{"VnExpress":"url hoặc null","Tuổi Trẻ":"url hoặc null","Thanh Niên":"url hoặc null","Dân Trí":"url hoặc null","Bóng Đá+":"url hoặc null"}. '
       +'Chỉ điền URL nếu tìm thấy bài thật, không bịa URL.';
-    const url='https://generativelanguage.googleapis.com/v1beta/models/'+GEMINI_MODEL+':generateContent?key='+GEMINI_API_KEY;
+    const url='https://generativelanguage.googleapis.com/v1beta/models/'+GEMINI_MODEL+':generateContent?key='+window.GEMINI_API_KEY;
     const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({contents:[{parts:[{text:prompt}]}],tools:[{google_search:{}}],
         generationConfig:{temperature:0,maxOutputTokens:1024}})});
@@ -912,7 +919,7 @@ async function genAI(mid,silent){
     return;
   }
   const body=document.getElementById('ai-body-'+mid);
-  if(!GEMINI_API_KEY){
+  if(!window.GEMINI_API_KEY){
     if(body&&!silent)body.innerHTML='<div class="ai-empty">⚠️ Chưa cấu hình Gemini API key trong source code.<br>Lấy key miễn phí tại <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a></div>';
     return;
   }
@@ -920,7 +927,7 @@ async function genAI(mid,silent){
   const home=m.home, away=m.away;
   const prompt='Bạn là chuyên gia phân tích bóng đá. Hãy tổng hợp và đưa ra nhận định chuyên sâu bằng tiếng Việt (150 chữ) cho trận đấu: '+home+' vs '+away+' tại FIFA World Cup 2026.\nHãy phân tích các khía cạnh:\n1. Phong độ gần đây và lực lượng của cả hai đội\n2. Lịch sử đối đầu (head-to-head)\n3. Điểm mạnh/yếu, chiến thuật dự kiến\n4. Các cầu thủ nguy hiểm cần chú ý\n5. Nhận định và dự đoán kết quả\nViết như một chuyên gia bóng đá Việt Nam, súc tích và chuyên nghiệp. Chỉ trả lời bằng đoạn văn phân tích, không dùng đầu mục số thứ tự';
   try{
-    const url='https://generativelanguage.googleapis.com/v1beta/models/'+GEMINI_MODEL+':generateContent?key='+GEMINI_API_KEY;
+    const url='https://generativelanguage.googleapis.com/v1beta/models/'+GEMINI_MODEL+':generateContent?key='+window.GEMINI_API_KEY;
     const res=await fetch(url,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -971,7 +978,7 @@ async function autoFetchResults(manual){
 
   if(need.length===0){ setStatus('✅ Không có trận nào cần cập nhật.'); fetchingResults=false; return; }
 
-  if(!GEMINI_API_KEY){
+  if(!window.GEMINI_API_KEY){
     setStatus('⚠️ Chưa cấu hình Gemini API key để lấy tỷ số tự động.');
     fetchingResults=false; return;
   }
@@ -986,7 +993,7 @@ async function autoFetchResults(manual){
 
   let found=0;
   try{
-    const url='https://generativelanguage.googleapis.com/v1beta/models/'+GEMINI_MODEL+':generateContent?key='+GEMINI_API_KEY;
+    const url='https://generativelanguage.googleapis.com/v1beta/models/'+GEMINI_MODEL+':generateContent?key='+window.GEMINI_API_KEY;
     const res=await fetch(url,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
