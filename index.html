@@ -1046,9 +1046,10 @@ function renderDashboard(){
     MATCHES.forEach(m=>{
       const pred=S.predictions[m.id]&&S.predictions[m.id][mb];
       const actual=S.actualScores[m.id];
-      if(!pred||!actual)return;
+      if(!actual)return; // trận chưa có kết quả → bỏ qua
+      if(!pred){pts+=-1;wrong++;return;} // không vote = sai → -1đ
       const p=calcPts(pred,actual);
-      if(p===null){skipped++;return;}
+      if(p===null)return;
       pts+=p; if(p===0)correct++; else wrong++;
     });
     return{name:mb,pts,correct,wrong,skipped};
@@ -1087,7 +1088,7 @@ function renderDashboard(){
       +'</div></td><td><span class="result-score">'+actual.home+'-'+actual.away+'</span></td>'
       +S.members.map(mb=>{
         const pred=S.predictions[m.id]&&S.predictions[m.id][mb];
-        if(!pred)return'<td style="color:var(--text4)">—</td>';
+        if(!pred)return'<td><span class="r-wrong">❌ Bỏ trống</span></td>';
         const pts=calcPts(pred,actual);
         const label=pred.outcome
           ?({home:'Thắng',draw:'Hòa',away:'Thua'}[pred.outcome]||pred.outcome)
