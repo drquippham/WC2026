@@ -609,7 +609,7 @@ const MATCHES=[
    Dán vào dưới đây (AIza...). Để trống nếu chưa dùng AI. */
 // Gemini API key được load từ Firebase (wc2026/config/gemini_key) — không hardcode trong source
 window.GEMINI_API_KEY = "";
-const GEMINI_MODEL   = "gemini-2.5-flash";
+const GEMINI_MODEL   = "gemini-1.5-flash-8b";
 
 let S={members:['An','Bình','Chi','Dũng'],predictions:{},actualScores:{},aiAnalysis:{},autoResults:{},pressLinks:{}};
 function loadS(){try{const d=localStorage.getItem('wc2026v3');if(d)Object.assign(S,JSON.parse(d));}catch(e){}
