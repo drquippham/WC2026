@@ -1050,7 +1050,7 @@ async function autoFetchResults(manual){
 function renderDashboard(){
   const stats=S.members.map(mb=>{
     let pts=0,correct=0,wrong=0,skipped=0;
-    MATCHES.forEach(m=>{
+    MATCHES.filter(m=>m.date>='2026-06-16').forEach(m=>{
       const pred=S.predictions[m.id]&&S.predictions[m.id][mb];
       const actual=S.actualScores[m.id];
       if(!actual)return; // trận chưa có kết quả → bỏ qua
@@ -1081,7 +1081,7 @@ function renderDashboard(){
     +'</div></div>';
   }).join('');
 
-  const finished=MATCHES.filter(m=>S.actualScores[m.id] && m.date>='2026-06-15')
+  const finished=MATCHES.filter(m=>S.actualScores[m.id] && m.date>='2026-06-16')
   .slice().sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
   if(!finished.length){document.getElementById('history-wrap').innerHTML='<div class="empty"><div class="empty-icon">⏳</div><p>Chưa có trận nào kết thúc</p></div>';return;}
   let tbl='<div class="hist-wrap"><table class="hist-table"><thead><tr><th>Trận đấu</th><th>Kết quả</th>'
