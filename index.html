@@ -1081,7 +1081,7 @@ function renderDashboard(){
     +'</div></div>';
   }).join('');
 
-  const finished=MATCHES.filter(m=>S.actualScores[m.id] && m.date>='2026-06-16')
+  const finished=MATCHES.filter(m=>S.actualScores[m.id] && m.date>='2026-06-15')
   .slice().sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
   if(!finished.length){document.getElementById('history-wrap').innerHTML='<div class="empty"><div class="empty-icon">⏳</div><p>Chưa có trận nào kết thúc</p></div>';return;}
   let tbl='<div class="hist-wrap"><table class="hist-table"><thead><tr><th>Trận đấu</th><th>Kết quả</th>'
