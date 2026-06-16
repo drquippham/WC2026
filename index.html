@@ -1271,6 +1271,16 @@ function getMemberStartDate(mb){
   return isLate?LATE_JOIN_DATE:'2026-06-16';
 }
 
+/* Gán hạng: bằng điểm thì đồng hạng, hạng kế tiếp chỉ +1 (không nhảy số) */
+function assignRanks(arr){
+  let rank=0;
+  arr.forEach((s,i)=>{
+    if(i===0||s.pts!==arr[i-1].pts)rank++;
+    s.rank=rank;
+  });
+  return arr;
+}
+
 function renderDashboard(){
   const stats=S.members.map(mb=>{
     let pts=0,correct=0,wrong=0,skipped=0;
@@ -1285,6 +1295,7 @@ function renderDashboard(){
     });
     return{name:mb,pts,correct,wrong,skipped};
   }).sort((a,b)=>b.pts-a.pts||a.wrong-b.wrong);
+  assignRanks(stats);
 
   // Giải cống hiến = người sai nhiều nhất (wrong cao nhất)
   const maxWrong=Math.max(...stats.map(s=>s.wrong));
@@ -1292,8 +1303,10 @@ function renderDashboard(){
 
   document.getElementById('leaderboard-grid').innerHTML=stats.map((s,i)=>{
     const isCongHien=congHienNames.has(s.name)&&s.wrong>0;
-    return '<div class="leader-card rank-'+(i<3?i+1:0)+'">'
-    +'<div class="leader-rank-txt">'+(i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1))+'</div>'
+    const tieCount=stats.filter(x=>x.rank===s.rank).length;
+    const medal=s.rank===1?'🥇':s.rank===2?'🥈':s.rank===3?'🥉':'#'+s.rank;
+    return '<div class="leader-card rank-'+(s.rank<=3?s.rank:0)+'">'
+    +'<div class="leader-rank-txt">'+medal+(tieCount>1?' <span style="opacity:.65">(đồng hạng)</span>':'')+'</div>'
     +(isCongHien?'<div class="cong-hien-badge">🎭 Cống hiến</div>':'')
     +'<div class="leader-av">'+s.name[0]+'</div>'
     +'<div class="leader-nm">'+s.name+'</div>'
@@ -1411,6 +1424,7 @@ function renderWeekly(){
   document.getElementById('weekly-range-sub').textContent='Tuần '+fmtDateVN(week.start)+' – '+fmtDateVN(week.end)+' (Thứ 2 → Chủ nhật)';
   const data=getWeekData(week);
   const stats=data.standings;
+  assignRanks(stats);
   document.getElementById('weekly-status-badge').textContent=data.frozen?'🔒 Đã chốt':'👀 Xem trước';
 
   const hasFinishedMatch=MATCHES.some(m=>m.date>=week.start&&m.date<=week.end&&S.actualScores[m.id]);
@@ -1430,8 +1444,10 @@ function renderWeekly(){
   document.getElementById('weekly-badges').innerHTML=badgesHtml;
 
   document.getElementById('weekly-grid').innerHTML=stats.length?stats.map((s,i)=>{
-    return'<div class="leader-card rank-'+(i<3?i+1:0)+'">'
-    +'<div class="leader-rank-txt">'+(i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1))+'</div>'
+    const tieCount=stats.filter(x=>x.rank===s.rank).length;
+    const medal=s.rank===1?'🥇':s.rank===2?'🥈':s.rank===3?'🥉':'#'+s.rank;
+    return'<div class="leader-card rank-'+(s.rank<=3?s.rank:0)+'">'
+    +'<div class="leader-rank-txt">'+medal+(tieCount>1?' <span style="opacity:.65">(đồng hạng)</span>':'')+'</div>'
     +(chNames.includes(s.name)&&s.wrong>0?'<div class="cong-hien-badge">🎭 Cống hiến</div>':'')
     +'<div class="leader-av">'+(s.name[0]||'?')+'</div>'
     +'<div class="leader-nm">'+s.name+'</div>'
@@ -1488,8 +1504,9 @@ function buildWeeklyRecapText(week,data){
     lines.push('');
   }
   lines.push('📊 Bảng điểm:');
-  stats.forEach((s,i)=>{
-    const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
+  assignRanks(stats);
+  stats.forEach(s=>{
+    const medal=s.rank===1?'🥇':s.rank===2?'🥈':s.rank===3?'🥉':'#'+s.rank;
     lines.push(medal+' '+s.name+': '+s.pts+'đ ('+s.correct+' đúng / '+s.wrong+' sai)');
   });
   lines.push('');
