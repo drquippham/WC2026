@@ -1219,10 +1219,18 @@ async function autoFetchResults(manual){
   fetchingResults=false;
 }
 
+/* Mốc ngày tính điểm: mặc định 2026-06-16, riêng các thành viên join trễ áp dụng mốc khác */
+const LATE_JOIN_DATE='2026-06-17';
+const LATE_JOIN_MEMBERS=['Sang He','Hào Hoa'];
+function getMemberStartDate(mb){
+  const isLate=LATE_JOIN_MEMBERS.some(n=>n.trim().toLowerCase()===String(mb).trim().toLowerCase());
+  return isLate?LATE_JOIN_DATE:'2026-06-16';
+}
+
 function renderDashboard(){
   const stats=S.members.map(mb=>{
     let pts=0,correct=0,wrong=0,skipped=0;
-    MATCHES.filter(m=>m.date>='2026-06-16').forEach(m=>{
+    MATCHES.filter(m=>m.date>=getMemberStartDate(mb)).forEach(m=>{
       const pred=S.predictions[m.id]&&S.predictions[m.id][mb];
       const actual=S.actualScores[m.id];
       if(!actual)return; // trận chưa có kết quả → bỏ qua
@@ -1266,6 +1274,7 @@ function renderDashboard(){
       +'<span style="font-size:12px;font-weight:700">'+m.away+'</span>'+flagImg(m.away)
       +'</div></td><td><span class="result-score">'+actual.home+'-'+actual.away+'</span></td>'
       +S.members.map(mb=>{
+        if(m.date<getMemberStartDate(mb))return'<td><span style="color:var(--text3)">— Chưa tham gia</span></td>';
         const pred=S.predictions[m.id]&&S.predictions[m.id][mb];
         if(!pred)return'<td><span class="r-wrong">❌ Bỏ trống</span></td>';
         const pts=calcPts(pred,actual);
