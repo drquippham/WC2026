@@ -221,6 +221,20 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
   border-radius:var(--radius-sm);padding:14px;font-size:13px;color:var(--text2);line-height:2}
 .empty{text-align:center;padding:48px 20px;color:var(--text3)}
 .empty-icon{font-size:48px;margin-bottom:10px}
+.week-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.week-select{font-family:'Inter';font-size:13px;font-weight:700;color:var(--text);background:var(--white);
+  border:1.5px solid var(--border2);border-radius:var(--radius-sm);padding:9px 14px;cursor:pointer;min-width:220px}
+.week-toolbar-btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn-weekly-dark{background:var(--white)!important;border:1.5px solid var(--border2)!important;color:var(--text2)!important}
+.btn-weekly-dark:hover{background:var(--bg)!important}
+.weekly-badges{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.weekly-badge-chip{display:flex;align-items:center;gap:8px;background:var(--white);border:1.5px solid var(--border2);
+  border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;font-weight:700}
+.weekly-badge-chip .wb-emoji{font-size:20px}
+.weekly-badge-chip.vua{border-color:#FDE68A;background:#FFFBEB}
+.weekly-badge-chip.cong-hien{border-color:#FBCFE8;background:#FDF2F8}
+.recap-box{white-space:pre-wrap;font-family:'Inter';font-size:13px;line-height:1.6;color:var(--text2);
+  background:var(--bg);border-radius:var(--radius-sm);padding:14px;margin-top:10px;border:1px solid var(--border2)}
 @media(max-width:520px){
   .topbar{padding:0 12px}.logo-sub{display:none}
   .nav-tab{padding:6px 10px;font-size:12px}
@@ -385,9 +399,11 @@ window.__firebaseInit = async function(databaseURL) {
     if (data.aiAnalysis) S.aiAnalysis = data.aiAnalysis;
     if (data.autoResults) S.autoResults = data.autoResults;
     if (data.pressLinks) S.pressLinks = data.pressLinks;
+    if (data.weeklyArchive) S.weeklyArchive = data.weeklyArchive;
     // Re-render UI
     renderFilters(); renderMatches(); renderSettings();
     if (document.getElementById('page-dashboard').classList.contains('active')) renderDashboard();
+    if (document.getElementById('page-weekly') && document.getElementById('page-weekly').classList.contains('active')) renderWeekly();
     // Nếu modal đang mở, refresh lại
     if (window.curMatch && document.getElementById('modal-overlay').classList.contains('open')) {
       document.getElementById('modal-body').innerHTML = buildModal(window.curMatch);
@@ -408,7 +424,8 @@ window.__firebaseInit = async function(databaseURL) {
       actualScores: S.actualScores || {},
       aiAnalysis: S.aiAnalysis || {},
       autoResults: S.autoResults || {},
-      pressLinks: S.pressLinks || {}
+      pressLinks: S.pressLinks || {},
+      weeklyArchive: S.weeklyArchive || {}
     });
   }
   const el = document.getElementById('sync-status');
@@ -458,6 +475,7 @@ window.__fbSave = async function(path, value) {
     <nav class="nav-tabs">
       <button class="nav-tab active" onclick="showPage('schedule',this)">📅 Lịch đấu</button>
       <button class="nav-tab" onclick="showPage('dashboard',this)">🏆 Dashboard</button>
+      <button class="nav-tab" onclick="showPage('weekly',this)">📆 Theo tuần</button>
       <button class="nav-tab" onclick="showPage('settings',this)">⚙️ Team</button>
     </nav>
   </div>
@@ -495,7 +513,33 @@ window.__fbSave = async function(path, value) {
     <div id="history-wrap"></div>
   </div>
 
+  <div id="page-weekly" class="page">
+    <div class="page-hero" style="background:linear-gradient(135deg,#0EA5E9,#22C55E)">
+      <div>
+        <div class="hero-title">ĐIỂM THEO TUẦN</div>
+        <div class="hero-sub" id="weekly-range-sub">Tuần tính từ Thứ 2 → Chủ nhật</div>
+      </div>
+      <div class="hero-badge" id="weekly-status-badge">—</div>
+    </div>
+
+    <div class="week-toolbar">
+      <select id="week-select" class="week-select" onchange="renderWeekly()"></select>
+      <div class="week-toolbar-btns">
+        <button class="btn-backup btn-weekly-dark" onclick="copyWeeklyRecap()">📋 Copy tóm tắt</button>
+        <button class="btn-backup btn-weekly-dark" id="btn-close-week" onclick="closeWeek()" style="display:none">🔒 Chốt tuần</button>
+        <button class="btn-backup btn-weekly-dark" id="btn-reopen-week" onclick="reopenWeek()" style="display:none">🔓 Mở lại tuần</button>
+      </div>
+    </div>
+
+    <div id="weekly-badges" class="weekly-badges"></div>
+    <div id="weekly-grid" class="leaderboard"></div>
+
+    <div style="font-family:'Bebas Neue';font-size:22px;color:var(--text);margin:24px 0 14px;letter-spacing:.5px">📈 XU HƯỚNG ĐIỂM QUA CÁC TUẦN ĐÃ CHỐT</div>
+    <div id="weekly-trend-wrap" class="settings-card"></div>
+  </div>
+
   <div id="page-settings" class="page">
+
     <div class="page-hero" style="background:linear-gradient(135deg,#059669,#10B981)">
       <div>
         <div class="hero-title">QUẢN LÝ TEAM</div>
@@ -744,14 +788,14 @@ const MATCHES=[
 window.GEMINI_API_KEY = "";
 const GEMINI_MODEL   = "gemini-2.0-flash-lite";
 
-let S={members:['An','Bình','Chi','Dũng'],predictions:{},actualScores:{},aiAnalysis:{},autoResults:{},pressLinks:{}};
+let S={members:['An','Bình','Chi','Dũng'],predictions:{},actualScores:{},aiAnalysis:{},autoResults:{},pressLinks:{},weeklyArchive:{}};
 function loadS(){try{const d=localStorage.getItem('wc2026v3');if(d)Object.assign(S,JSON.parse(d));}catch(e){}
-  if(!S.aiAnalysis)S.aiAnalysis={}; if(!S.autoResults)S.autoResults={}; if(!S.pressLinks)S.pressLinks={};}
+  if(!S.aiAnalysis)S.aiAnalysis={}; if(!S.autoResults)S.autoResults={}; if(!S.pressLinks)S.pressLinks={}; if(!S.weeklyArchive)S.weeklyArchive={};}
 function saveS(path){
   localStorage.setItem('wc2026v3',JSON.stringify(S));
   if(window.__fbSave){
     if(path) window.__fbSave(path, S[path]);
-    else ['members','predictions','actualScores','aiAnalysis','autoResults','pressLinks'].forEach(k=>window.__fbSave(k,S[k]||{}));
+    else ['members','predictions','actualScores','aiAnalysis','autoResults','pressLinks','weeklyArchive'].forEach(k=>window.__fbSave(k,S[k]||{}));
   }
 }
 loadS();
@@ -1284,9 +1328,237 @@ function renderDashboard(){
         return'<td><span class="'+(pts===0?'r-win':'r-wrong')+'">'+(pts===0?'✅':'❌')+' '+label+'</span></td>';
       }).join('')+'</tr>';
   });
-  tbl+='</tbody></table></div>';
-  document.getElementById('history-wrap').innerHTML=tbl;
 }
+
+/* ===== ĐIỂM THEO TUẦN (Thứ 2 → Chủ nhật) ===== */
+let currentWeekKey=null;
+
+function pad2(n){return n<10?'0'+n:''+n;}
+function fmtDateVN(dateStr){const[y,m,d]=dateStr.split('-');return d+'/'+m;}
+
+function getWeekRange(dateStr){
+  const d=new Date(dateStr+'T00:00:00');
+  const wd=d.getDay(); // 0=CN..6=T7
+  const diffToMonday=wd===0?6:wd-1;
+  const mon=new Date(d); mon.setDate(d.getDate()-diffToMonday);
+  const sun=new Date(mon); sun.setDate(mon.getDate()+6);
+  const fmt=x=>x.getFullYear()+'-'+pad2(x.getMonth()+1)+'-'+pad2(x.getDate());
+  return{start:fmt(mon),end:fmt(sun)};
+}
+function getAllWeeks(){
+  const seen={};
+  MATCHES.forEach(m=>{const r=getWeekRange(m.date); if(!seen[r.start])seen[r.start]=r;});
+  return Object.values(seen).sort((a,b)=>a.start.localeCompare(b.start));
+}
+function computeWeeklyStats(start,end){
+  return S.members.map(mb=>{
+    let pts=0,correct=0,wrong=0;
+    const memberStart=getMemberStartDate(mb);
+    MATCHES.filter(m=>m.date>=start&&m.date<=end&&m.date>=memberStart).forEach(m=>{
+      const actual=S.actualScores[m.id];
+      if(!actual)return;
+      const pred=S.predictions[m.id]&&S.predictions[m.id][mb];
+      if(!pred){pts+=-1;wrong++;return;}
+      const p=calcPts(pred,actual);
+      if(p===null)return;
+      pts+=p; if(p===0)correct++; else wrong++;
+    });
+    return{name:mb,pts,correct,wrong};
+  }).sort((a,b)=>b.pts-a.pts||a.wrong-b.wrong);
+}
+function getWeekData(week){
+  const arc=S.weeklyArchive[week.start];
+  if(arc)return{standings:arc.standings,frozen:true,closedAt:arc.closedAt};
+  return{standings:computeWeeklyStats(week.start,week.end),frozen:false,closedAt:null};
+}
+
+function populateWeekSelect(preferKey){
+  const weeks=getAllWeeks();
+  const sel=document.getElementById('week-select');
+  const todayRange=getWeekRange(new Date().toISOString().slice(0,10));
+  let target=preferKey&&weeks.find(w=>w.start===preferKey)?preferKey:null;
+  if(!target){
+    const hasToday=weeks.find(w=>w.start===todayRange.start);
+    target=hasToday?hasToday.start:(weeks.length?weeks[weeks.length-1].start:null);
+  }
+  sel.innerHTML=weeks.map((w,i)=>{
+    const closed=!!S.weeklyArchive[w.start];
+    const isToday=w.start===todayRange.start;
+    const label='Tuần '+(i+1)+' ('+fmtDateVN(w.start)+' – '+fmtDateVN(w.end)+')'+(closed?' 🔒':'')+(isToday?' • hiện tại':'');
+    return'<option value="'+w.start+'"'+(w.start===target?' selected':'')+'>'+label+'</option>';
+  }).join('');
+  if(target)sel.value=target;
+}
+
+function renderWeekly(){
+  const sel=document.getElementById('week-select');
+  const prevSelection=sel.value||currentWeekKey;
+  populateWeekSelect(prevSelection);
+  currentWeekKey=sel.value;
+  const weeks=getAllWeeks();
+  const week=weeks.find(w=>w.start===currentWeekKey);
+
+  if(!week){
+    document.getElementById('weekly-grid').innerHTML='<div class="empty"><div class="empty-icon">📭</div><p>Chưa có trận đấu nào trong dữ liệu</p></div>';
+    document.getElementById('weekly-badges').innerHTML='';
+    document.getElementById('weekly-status-badge').textContent='—';
+    document.getElementById('btn-close-week').style.display='none';
+    document.getElementById('btn-reopen-week').style.display='none';
+    renderWeeklyTrend();
+    return;
+  }
+
+  document.getElementById('weekly-range-sub').textContent='Tuần '+fmtDateVN(week.start)+' – '+fmtDateVN(week.end)+' (Thứ 2 → Chủ nhật)';
+  const data=getWeekData(week);
+  const stats=data.standings;
+  document.getElementById('weekly-status-badge').textContent=data.frozen?'🔒 Đã chốt':'👀 Xem trước';
+
+  const hasFinishedMatch=MATCHES.some(m=>m.date>=week.start&&m.date<=week.end&&S.actualScores[m.id]);
+  document.getElementById('btn-close-week').style.display=(!data.frozen&&hasFinishedMatch)?'':'none';
+  document.getElementById('btn-reopen-week').style.display=data.frozen?'':'none';
+
+  const played=stats.filter(s=>s.correct+s.wrong>0);
+  let vuaNames=[],chNames=[],badgesHtml='';
+  if(played.length){
+    const maxPts=Math.max(...played.map(s=>s.pts));
+    const maxWrong=Math.max(...played.map(s=>s.wrong));
+    vuaNames=played.filter(s=>s.pts===maxPts).map(s=>s.name);
+    chNames=maxWrong>0?played.filter(s=>s.wrong===maxWrong).map(s=>s.name):[];
+    badgesHtml+='<div class="weekly-badge-chip vua"><span class="wb-emoji">🥇</span>Vua tuần: '+vuaNames.join(', ')+' ('+maxPts+'đ)</div>';
+    if(chNames.length)badgesHtml+='<div class="weekly-badge-chip cong-hien"><span class="wb-emoji">🎭</span>Cống hiến tuần: '+chNames.join(', ')+' (sai '+maxWrong+')</div>';
+  }
+  document.getElementById('weekly-badges').innerHTML=badgesHtml;
+
+  document.getElementById('weekly-grid').innerHTML=stats.length?stats.map((s,i)=>{
+    return'<div class="leader-card rank-'+(i<3?i+1:0)+'">'
+    +'<div class="leader-rank-txt">'+(i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1))+'</div>'
+    +(chNames.includes(s.name)&&s.wrong>0?'<div class="cong-hien-badge">🎭 Cống hiến</div>':'')
+    +'<div class="leader-av">'+(s.name[0]||'?')+'</div>'
+    +'<div class="leader-nm">'+s.name+'</div>'
+    +'<div class="leader-pts-big" style="color:'+(s.pts<0?'#DC2626':s.pts===0?'var(--text2)':'#16A34A')+'">'+s.pts+'</div>'
+    +'<div class="leader-pts-label">điểm trong tuần</div>'
+    +'<div class="leader-stat-row">'
+    +'<div><span style="color:#16A34A">'+s.correct+'</span>Đúng</div>'
+    +'<div><span style="color:#DC2626">'+s.wrong+'</span>Sai</div>'
+    +'</div></div>';
+  }).join(''):'<div class="empty"><div class="empty-icon">👥</div><p>Chưa có thành viên</p></div>';
+
+  renderWeeklyTrend();
+}
+
+function closeWeek(){
+  const weeks=getAllWeeks();
+  const week=weeks.find(w=>w.start===currentWeekKey);
+  if(!week)return;
+  const pw=prompt('🔒 Nhập mật khẩu admin để chốt điểm tuần '+fmtDateVN(week.start)+' – '+fmtDateVN(week.end)+':');
+  if(pw===null)return;
+  if(pw!=='Qui'){alert('❌ Sai mật khẩu!');return;}
+  if(!confirm('Chốt điểm tuần này? Kết quả sẽ được lưu cố định, không tự đổi theo dữ liệu chỉnh sửa sau này.'))return;
+  S.weeklyArchive[week.start]={start:week.start,end:week.end,standings:computeWeeklyStats(week.start,week.end),closedAt:new Date().toISOString()};
+  saveS('weeklyArchive');
+  renderWeekly();
+  alert('✅ Đã chốt điểm tuần! Có thể bấm "📋 Copy tóm tắt" để gửi nhóm.');
+}
+function reopenWeek(){
+  const week=getAllWeeks().find(w=>w.start===currentWeekKey);
+  if(!week)return;
+  const pw=prompt('🔒 Nhập mật khẩu admin để mở lại tuần này (sẽ tính lại theo dữ liệu hiện tại):');
+  if(pw===null)return;
+  if(pw!=='Qui'){alert('❌ Sai mật khẩu!');return;}
+  if(!confirm('Mở lại tuần này? Bản đã chốt sẽ bị xóa.'))return;
+  delete S.weeklyArchive[week.start];
+  saveS('weeklyArchive');
+  renderWeekly();
+}
+
+function buildWeeklyRecapText(week,data){
+  const stats=data.standings;
+  const played=stats.filter(s=>s.correct+s.wrong>0);
+  const lines=[];
+  lines.push('🏆 TỔNG KẾT TUẦN ('+fmtDateVN(week.start)+' – '+fmtDateVN(week.end)+')');
+  lines.push(data.frozen?'📌 Đã chốt chính thức':'👀 Xem trước (chưa chốt)');
+  lines.push('');
+  if(played.length){
+    const maxPts=Math.max(...played.map(s=>s.pts));
+    const maxWrong=Math.max(...played.map(s=>s.wrong));
+    const vua=played.filter(s=>s.pts===maxPts).map(s=>s.name);
+    const ch=maxWrong>0?played.filter(s=>s.wrong===maxWrong).map(s=>s.name):[];
+    lines.push('🥇 Vua tuần: '+vua.join(', ')+' ('+maxPts+'đ)');
+    if(ch.length)lines.push('🎭 Cống hiến tuần: '+ch.join(', ')+' (sai '+maxWrong+' trận)');
+    lines.push('');
+  }
+  lines.push('📊 Bảng điểm:');
+  stats.forEach((s,i)=>{
+    const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
+    lines.push(medal+' '+s.name+': '+s.pts+'đ ('+s.correct+' đúng / '+s.wrong+' sai)');
+  });
+  lines.push('');
+  lines.push('⚽ Hẹn tuần sau!');
+  return lines.join('\n');
+}
+function copyWeeklyRecap(){
+  const week=getAllWeeks().find(w=>w.start===currentWeekKey);
+  if(!week){alert('Chưa có tuần nào để tóm tắt.');return;}
+  const text=buildWeeklyRecapText(week,getWeekData(week));
+  const fallback=()=>{
+    const ta=document.createElement('textarea');
+    ta.value=text; ta.style.position='fixed'; ta.style.left='-9999px';
+    document.body.appendChild(ta); ta.select();
+    try{document.execCommand('copy');alert('✅ Đã copy tóm tắt tuần!');}
+    catch(e){alert('❌ Không tự copy được. Nội dung:\n\n'+text);}
+    document.body.removeChild(ta);
+  };
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text)
+      .then(()=>alert('✅ Đã copy tóm tắt tuần! Dán vào Zalo/Messenger để gửi nhóm.'))
+      .catch(fallback);
+  }else fallback();
+}
+
+function renderWeeklyTrend(){
+  const wrap=document.getElementById('weekly-trend-wrap');
+  const archivedKeys=Object.keys(S.weeklyArchive).sort();
+  if(!archivedKeys.length){
+    wrap.innerHTML='<div class="empty"><div class="empty-icon">📈</div><p>Chốt ít nhất 1 tuần để bắt đầu vẽ biểu đồ xu hướng.</p></div>';
+    return;
+  }
+  const weeksData=archivedKeys.map(k=>S.weeklyArchive[k]);
+  const colors=['#2563EB','#DC2626','#16A34A','#F59E0B','#7C3AED','#0EA5E9','#EC4899','#CA8A04','#059669','#DB2777'];
+  const names=S.members.length?S.members:[...new Set(weeksData.flatMap(w=>w.standings.map(s=>s.name)))];
+
+  const series=names.map((mb,idx)=>({
+    name:mb,color:colors[idx%colors.length],
+    pts:weeksData.map(w=>{const st=w.standings.find(s=>s.name===mb);return st?st.pts:null;})
+  }));
+
+  const W=720,H=260,padL=34,padR=14,padT=16,padB=30;
+  const n=weeksData.length;
+  const allVals=series.flatMap(s=>s.pts.filter(v=>v!==null));
+  let minV=Math.min(0,...allVals), maxV=Math.max(0,...allVals);
+  if(minV===maxV){minV-=1;maxV+=1;}
+  const xStep=n>1?(W-padL-padR)/(n-1):0;
+  const yFor=v=>H-padB-((v-minV)/(maxV-minV))*(H-padT-padB);
+  const xFor=i=>padL+i*xStep;
+
+  let svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block">';
+  svg+='<line x1="'+padL+'" y1="'+yFor(0)+'" x2="'+(W-padR)+'" y2="'+yFor(0)+'" stroke="#D1D5DB" stroke-width="1" stroke-dasharray="4 4"/>';
+  weeksData.forEach((w,i)=>{
+    svg+='<text x="'+xFor(i)+'" y="'+(H-10)+'" font-size="10" fill="#6B7280" text-anchor="middle">'+fmtDateVN(w.start)+'</text>';
+  });
+  series.forEach(s=>{
+    const pathPts=[]; s.pts.forEach((v,i)=>{if(v!==null)pathPts.push(xFor(i)+','+yFor(v));});
+    if(pathPts.length>1)svg+='<polyline points="'+pathPts.join(' ')+'" fill="none" stroke="'+s.color+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+    s.pts.forEach((v,i)=>{if(v!==null)svg+='<circle cx="'+xFor(i)+'" cy="'+yFor(v)+'" r="3.5" fill="'+s.color+'"/>';});
+  });
+  svg+='</svg>';
+
+  const legend='<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:10px">'
+    +series.map(s=>'<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2)"><span style="width:10px;height:10px;border-radius:50%;background:'+s.color+';display:inline-block"></span>'+s.name+'</div>').join('')
+    +'</div>';
+
+  wrap.innerHTML='<div style="font-size:12px;color:var(--text3);margin-bottom:8px">Điểm theo từng tuần (không cộng dồn) — chỉ tính các tuần đã chốt 🔒</div>'+svg+legend;
+}
+
 
 function renderSettings(){
   document.getElementById('member-tags').innerHTML=S.members.map(m=>
@@ -1313,6 +1585,7 @@ function showPage(id,btn){
   document.getElementById('page-'+id).classList.add('active');
   btn.classList.add('active');
   if(id==='dashboard')renderDashboard();
+  if(id==='weekly')renderWeekly();
   if(id==='settings')renderSettings();
   if(id==='schedule')scrollToToday();
 }
@@ -1336,12 +1609,14 @@ function importData(input){
       const data=JSON.parse(e.target.result);
       if(!data||typeof data!=='object')throw new Error('File không hợp lệ');
       if(!confirm('Khôi phục dữ liệu từ file backup? Dữ liệu hiện tại sẽ bị ghi đè.'))return;
-      S={members:[],predictions:{},actualScores:{},aiAnalysis:{},autoResults:{}};
+      S={members:[],predictions:{},actualScores:{},aiAnalysis:{},autoResults:{},pressLinks:{},weeklyArchive:{}};
       Object.assign(S,data);
       if(!S.aiAnalysis)S.aiAnalysis={}; if(!S.autoResults)S.autoResults={};
+      if(!S.weeklyArchive)S.weeklyArchive={};
       if(!S.members||!S.members.length)S.members=['An','Bình','Chi','Dũng'];
       saveS();
       renderFilters();renderMatches();renderDashboard();renderSettings();
+      if(document.getElementById('page-weekly'))renderWeekly();
       alert('✅ Khôi phục dữ liệu thành công!');
     }catch(err){alert('❌ Lỗi import: '+err.message);}
   };
