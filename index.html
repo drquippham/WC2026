@@ -1265,7 +1265,7 @@ async function autoFetchResults(manual){
 
 /* Mốc ngày tính điểm: mặc định 2026-06-16, riêng các thành viên join trễ áp dụng mốc khác */
 const LATE_JOIN_DATE='2026-06-17';
-const LATE_JOIN_MEMBERS=['Sang He','Hào Hoa'];
+const LATE_JOIN_MEMBERS=['Sang He','Hào Hoa','anh Phúc IT'];
 function getMemberStartDate(mb){
   const isLate=LATE_JOIN_MEMBERS.some(n=>n.trim().toLowerCase()===String(mb).trim().toLowerCase());
   return isLate?LATE_JOIN_DATE:'2026-06-16';
@@ -1341,6 +1341,8 @@ function renderDashboard(){
         return'<td><span class="'+(pts===0?'r-win':'r-wrong')+'">'+(pts===0?'✅':'❌')+' '+label+'</span></td>';
       }).join('')+'</tr>';
   });
+  tbl+='</tbody></table></div>';
+  document.getElementById('history-wrap').innerHTML=tbl;
 }
 
 /* ===== ĐIỂM THEO TUẦN (Thứ 2 → Chủ nhật) ===== */
