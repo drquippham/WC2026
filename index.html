@@ -53,6 +53,25 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
   box-shadow:0 1px 3px rgba(0,0,0,.08);position:relative;overflow:hidden}
 .match-card:hover{box-shadow:0 4px 12px rgba(37,99,235,.15);transform:translateY(-2px);border-color:var(--primary)}
 .match-card.has-prediction{border-left:4px solid var(--accent)}
+/* Viền phát sáng xanh khi CHÍNH user hiện tại đã dự đoán trận này — giúp nhận diện nhanh, tránh bỏ sót */
+.match-card.mine-done{
+  border:1.5px solid #34D399;
+  background:linear-gradient(180deg,#FFFFFF 0%,#FFFFFF 60%,#F0FDF4 100%);
+  box-shadow:0 0 0 3px rgba(16,185,129,.13),0 6px 18px rgba(16,185,129,.16),0 1px 3px rgba(0,0,0,.06);
+}
+.match-card.mine-done:hover{
+  border-color:#10B981;
+  box-shadow:0 0 0 4px rgba(16,185,129,.18),0 10px 26px rgba(16,185,129,.24);
+  transform:translateY(-2px);
+}
+.match-card.mine-done.has-prediction{border-left:1.5px solid #34D399}
+.mine-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,#10B981,#34D399);
+  color:#fff;font-size:11px;font-weight:800;padding:4px 10px 4px 8px;border-radius:20px;
+  box-shadow:0 2px 6px rgba(16,185,129,.4);letter-spacing:.2px;white-space:nowrap;
+  animation:minePop .35s cubic-bezier(.34,1.56,.64,1)}
+.mine-badge .mb-check{display:inline-flex;align-items:center;justify-content:center;
+  width:13px;height:13px;border-radius:50%;background:rgba(255,255,255,.3);font-size:9px;line-height:1}
+@keyframes minePop{0%{transform:scale(.6);opacity:0}65%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
 .match-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .match-group-badge{background:linear-gradient(135deg,var(--primary),#7C3AED);color:#fff;
   font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.5px}
@@ -382,9 +401,15 @@ window.__firebaseInit = async function(databaseURL) {
   dbReady = true;
 
   // Lấy Gemini API key từ Firebase (ẩn khỏi source code)
+  // Hỗ trợ nhiều key: 1 key chính (gemini_key) + danh sách key backup (gemini_keys_backup)
   try {
     const keySnap = await get(ref(db, 'wc2026/config/gemini_key'));
-    if (keySnap.exists()) window.GEMINI_API_KEY = keySnap.val();
+    const primary = keySnap.exists() ? keySnap.val() : '';
+    const backupSnap = await get(ref(db, 'wc2026/config/gemini_keys_backup'));
+    const backups = backupSnap.exists() ? backupSnap.val() : [];
+    const allKeys = [primary, ...(Array.isArray(backups) ? backups : [])].filter(Boolean);
+    if (window.setGeminiKeys) window.setGeminiKeys(allKeys);
+    else if (allKeys.length) window.GEMINI_API_KEY = allKeys[0];
   } catch(e) {}
 
   // Lắng nghe thay đổi real-time từ Firebase
@@ -430,6 +455,26 @@ window.__firebaseInit = async function(databaseURL) {
   }
   const el = document.getElementById('sync-status');
   if (el) { el.textContent = '🟢 Firebase kết nối'; el.style.color = '#16A34A'; }
+};
+
+/* ====== ADMIN: lưu danh sách Gemini API key backup vào Firebase ======
+   Chạy 1 LẦN trong Console (F12) của trang đã deploy, ví dụ:
+   __setGeminiBackupKeysAdmin(["AQ.xxx1","AQ.xxx2","AQ.xxx3"])
+   Sau khi lưu, các key này tự động được tải lại ở MỌI lần mở app sau này
+   (không cần chạy lại), và app sẽ tự xoay sang key kế tiếp khi 1 key hết quota. */
+window.__setGeminiBackupKeysAdmin = async function(keysArr) {
+  if (!dbReady || !db) { alert('❌ Chưa kết nối Firebase!'); return; }
+  if (!Array.isArray(keysArr) || !keysArr.length) { alert('❌ Cần truyền vào một mảng API key.'); return; }
+  try {
+    await set(ref(db, 'wc2026/config/gemini_keys_backup'), keysArr);
+    const keySnap = await get(ref(db, 'wc2026/config/gemini_key'));
+    const primary = keySnap.exists() ? keySnap.val() : '';
+    const allKeys = [primary, ...keysArr].filter(Boolean);
+    if (window.setGeminiKeys) window.setGeminiKeys(allKeys);
+    alert('✅ Đã lưu ' + keysArr.length + ' API key backup vào Firebase! Tổng cộng ' + allKeys.length + ' key đang dùng (đã áp dụng ngay cho phiên hiện tại).');
+  } catch(e) {
+    alert('❌ Lỗi lưu key backup: ' + e.message);
+  }
 };
 
 // Ghi đè saveS để đồng thời lưu localStorage + Firebase
@@ -788,6 +833,49 @@ const MATCHES=[
 window.GEMINI_API_KEY = "";
 const GEMINI_MODEL   = "gemini-2.0-flash-lite";
 
+/* ====== GEMINI MULTI-KEY FAILOVER ======
+   Hỗ trợ 1 key chính + nhiều key backup. Khi gọi API mà gặp lỗi hết quota
+   (HTTP 429 / RESOURCE_EXHAUSTED) thì tự động xoay sang key kế tiếp và thử lại,
+   không cần người dùng làm gì. Toàn bộ danh sách key được nạp từ Firebase lúc khởi động. */
+window.GEMINI_API_KEYS = window.GEMINI_API_KEYS || [];
+window.__geminiKeyIdx = 0;
+function setGeminiKeys(keys){
+  window.GEMINI_API_KEYS = (keys||[]).filter(Boolean);
+  window.__geminiKeyIdx = 0;
+  window.GEMINI_API_KEY = window.GEMINI_API_KEYS[0] || '';
+}
+function isGeminiQuotaError(status, data){
+  if(status===429)return true;
+  const s = ((data && data.error && (data.error.status || data.error.message)) || '') + '';
+  return /RESOURCE_EXHAUSTED|quota/i.test(s);
+}
+/* Gọi Gemini generateContent — tự động chuyển key & thử lại khi gặp lỗi hết quota.
+   Trả về {res, data} của lần gọi cuối (thành công hoặc lỗi không phải do quota). */
+async function geminiGenerateContent(payload){
+  const total = window.GEMINI_API_KEYS.length || 1;
+  let lastErr = null;
+  for(let i=0; i<total; i++){
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/'+GEMINI_MODEL+':generateContent?key='+window.GEMINI_API_KEY;
+    let res, data;
+    try{
+      res = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      data = await res.json().catch(()=>({}));
+    }catch(networkErr){
+      throw networkErr; // lỗi mạng — không liên quan quota, không cần xoay key
+    }
+    const quotaHit = isGeminiQuotaError(res.status, data);
+    if(quotaHit && i<total-1){
+      console.warn('[Gemini] Key #'+(window.__geminiKeyIdx+1)+'/'+total+' hết quota → chuyển key kế tiếp...');
+      lastErr = new Error((data?.error?.message)||('HTTP '+res.status));
+      window.__geminiKeyIdx = (window.__geminiKeyIdx+1) % total;
+      window.GEMINI_API_KEY = window.GEMINI_API_KEYS[window.__geminiKeyIdx];
+      continue;
+    }
+    return {res, data};
+  }
+  throw lastErr || new Error('Tất cả API key Gemini đều đã hết quota');
+}
+
 let S={members:['An','Bình','Chi','Dũng'],predictions:{},actualScores:{},aiAnalysis:{},autoResults:{},pressLinks:{},weeklyArchive:{}};
 function loadS(){try{const d=localStorage.getItem('wc2026v3');if(d)Object.assign(S,JSON.parse(d));}catch(e){}
   if(!S.aiAnalysis)S.aiAnalysis={}; if(!S.autoResults)S.autoResults={}; if(!S.pressLinks)S.pressLinks={}; if(!S.weeklyArchive)S.weeklyArchive={};}
@@ -898,6 +986,7 @@ function renderCard(m){
   const st=getStatus(m);
   const preds=S.predictions[m.id]||{};
   const cnt=Object.keys(preds).filter(k=>preds[k]&&(preds[k].home!==undefined||preds[k].outcome!==undefined)).length;
+  const myPred=currentUser&&preds[currentUser]&&(preds[currentUser].home!==undefined||preds[currentUser].outcome!==undefined);
   const actual=S.actualScores[m.id];
   const timeBadge=st==='live'?'<span class="time-chip live">🔴 LIVE</span>':
     st==='soon'?'<span class="time-chip soon">⚡ Sắp bắt đầu</span>':
@@ -906,11 +995,13 @@ function renderCard(m){
   const vsBlock=actual
     ?'<div class="vs-center"><div class="score-display">'+actual.home+' - '+actual.away+'</div></div>'
     :'<div class="vs-center"><div class="vs-text">VS</div><div style="font-family:\'Bebas Neue\';font-size:14px;color:var(--text4)">'+m.time+'</div></div>';
-  return '<div class="match-card'+(cnt>0?' has-prediction':'')+'" onclick="openMatch(\''+m.id+'\')">'
+  return '<div class="match-card'+(cnt>0?' has-prediction':'')+(myPred?' mine-done':'')+'" onclick="openMatch(\''+m.id+'\')">'
     +'<div class="match-meta">'
     +'<span class="match-group-badge">'+m.group+'</span>'
     +'<div style="display:flex;align-items:center;gap:6px">'
-    +(cnt>0?'<span style="font-size:11px;font-weight:700;color:var(--accent)">✏️ '+cnt+' dự đoán</span>':'')
+    +(myPred
+        ?'<span class="mine-badge"><span class="mb-check">✓</span>Bạn đã dự đoán</span>'
+        :(cnt>0?'<span style="font-size:11px;font-weight:700;color:var(--accent)">✏️ '+cnt+' dự đoán</span>':''))
     +timeBadge+'</div></div>'
     +'<div class="teams-row">'
     +'<div class="team-block">'+flagImg(m.home)+'<span class="team-name">'+m.home+'</span></div>'
@@ -1099,11 +1190,8 @@ async function fetchPressLinks(m){
       +'Trả về DUY NHẤT một JSON object, không markdown, dạng: '
       +'{"VnExpress":"url hoặc null","Tuổi Trẻ":"url hoặc null","Thanh Niên":"url hoặc null","Dân Trí":"url hoặc null","Bóng Đá+":"url hoặc null"}. '
       +'Chỉ điền URL nếu tìm thấy bài thật, không bịa URL.';
-    const url='https://generativelanguage.googleapis.com/v1beta/models/'+GEMINI_MODEL+':generateContent?key='+window.GEMINI_API_KEY;
-    const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({contents:[{parts:[{text:prompt}]}],tools:[{google_search:{}}],
-        generationConfig:{temperature:0,maxOutputTokens:1024}})});
-    const data=await res.json().catch(()=>({}));
+    const {res,data}=await geminiGenerateContent({contents:[{parts:[{text:prompt}]}],tools:[{google_search:{}}],
+        generationConfig:{temperature:0,maxOutputTokens:1024}});
     if(!res.ok)return;
     let text=(data?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('')||'').trim();
     text=text.replace(/```json|```/g,'').trim();
@@ -1143,20 +1231,14 @@ async function genAI(mid,silent){
   const home=m.home, away=m.away;
   const prompt='Bạn là chuyên gia phân tích bóng đá. Hãy tổng hợp và đưa ra nhận định chuyên sâu bằng tiếng Việt (150 chữ) cho trận đấu: '+home+' vs '+away+' tại FIFA World Cup 2026.\nHãy phân tích các khía cạnh:\n1. Phong độ gần đây và lực lượng của cả hai đội\n2. Lịch sử đối đầu (head-to-head)\n3. Điểm mạnh/yếu, chiến thuật dự kiến\n4. Các cầu thủ nguy hiểm cần chú ý\n5. Nhận định và dự đoán kết quả\nViết như một chuyên gia bóng đá Việt Nam, súc tích và chuyên nghiệp. Chỉ trả lời bằng đoạn văn phân tích, không dùng đầu mục số thứ tự';
   try{
-    const url='https://generativelanguage.googleapis.com/v1beta/models/'+GEMINI_MODEL+':generateContent?key='+window.GEMINI_API_KEY;
-    const res=await fetch(url,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
+    const {res,data}=await geminiGenerateContent({
         contents:[{parts:[{text:prompt}]}],
         generationConfig:{
           maxOutputTokens:2048,
           temperature:0.7,
           thinkingConfig:{thinkingBudget:0}  /* tắt thinking để dành token cho câu trả lời */
         }
-      })
-    });
-    const data=await res.json().catch(()=>({}));
+      });
     if(!res.ok){
       const msg=(data?.error?.message)||('HTTP '+res.status);
       throw new Error(msg);
@@ -1209,17 +1291,11 @@ async function autoFetchResults(manual){
 
   let found=0;
   try{
-    const url='https://generativelanguage.googleapis.com/v1beta/models/'+GEMINI_MODEL+':generateContent?key='+window.GEMINI_API_KEY;
-    const res=await fetch(url,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
+    const {res,data}=await geminiGenerateContent({
         contents:[{parts:[{text:prompt}]}],
         tools:[{google_search:{}}],
         generationConfig:{temperature:0,maxOutputTokens:4096}
-      })
-    });
-    const data=await res.json().catch(()=>({}));
+      });
     console.log('[AutoFetch] status:', res.status, 'finishReason:', data?.candidates?.[0]?.finishReason);
     if(!res.ok){
       const msg=(data?.error?.message)||('HTTP '+res.status);
@@ -1271,6 +1347,28 @@ function getMemberStartDate(mb){
   return isLate?LATE_JOIN_DATE:'2026-06-16';
 }
 
+/* Mốc theo GIỜ-PHÚT cụ thể cho thành viên tham gia trễ giữa chừng (vd: Minh Lu).
+   Các trận có giờ bóng lăn (kickoff) <= mốc này → đánh dấu "Chưa tham gia", không tính điểm.
+   startPts: điểm khởi đầu (offset) để đảm bảo công bằng với các thành viên đã tham gia từ đầu. */
+const SPECIAL_CUTOFF_MEMBERS={
+  'Minh Lu':{cutoff:new Date(2026,5,18,18,0),startPts:-5} // 18/06/2026 18:00 (giờ VN)
+};
+function getSpecialCutoff(mb){
+  const key=Object.keys(SPECIAL_CUTOFF_MEMBERS).find(k=>k.trim().toLowerCase()===String(mb).trim().toLowerCase());
+  return key?SPECIAL_CUTOFF_MEMBERS[key]:null;
+}
+/* Trận này có được tính điểm cho thành viên mb không? */
+function isMatchCountedForMember(m,mb){
+  const sp=getSpecialCutoff(mb);
+  if(sp)return kickoff(m).getTime()>sp.cutoff.getTime();
+  return m.date>=getMemberStartDate(mb);
+}
+/* Điểm khởi đầu (offset) của thành viên, mặc định 0 */
+function getMemberStartPts(mb){
+  const sp=getSpecialCutoff(mb);
+  return sp&&typeof sp.startPts==='number'?sp.startPts:0;
+}
+
 /* Gán hạng: bằng điểm thì đồng hạng, hạng kế tiếp chỉ +1 (không nhảy số) */
 function assignRanks(arr){
   let rank=0;
@@ -1283,8 +1381,8 @@ function assignRanks(arr){
 
 function renderDashboard(){
   const stats=S.members.map(mb=>{
-    let pts=0,correct=0,wrong=0,skipped=0;
-    MATCHES.filter(m=>m.date>=getMemberStartDate(mb)).forEach(m=>{
+    let pts=getMemberStartPts(mb),correct=0,wrong=0,skipped=0;
+    MATCHES.filter(m=>isMatchCountedForMember(m,mb)).forEach(m=>{
       const pred=S.predictions[m.id]&&S.predictions[m.id][mb];
       const actual=S.actualScores[m.id];
       if(!actual)return; // trận chưa có kết quả → bỏ qua
@@ -1331,7 +1429,7 @@ function renderDashboard(){
       +'<span style="font-size:12px;font-weight:700">'+m.away+'</span>'+flagImg(m.away)
       +'</div></td><td><span class="result-score">'+actual.home+'-'+actual.away+'</span></td>'
       +S.members.map(mb=>{
-        if(m.date<getMemberStartDate(mb))return'<td><span style="color:var(--text3)">— Chưa tham gia</span></td>';
+        if(!isMatchCountedForMember(m,mb))return'<td><span style="color:var(--text3)">— Chưa tham gia</span></td>';
         const pred=S.predictions[m.id]&&S.predictions[m.id][mb];
         if(!pred)return'<td><span class="r-wrong">❌ Bỏ trống</span></td>';
         const pts=calcPts(pred,actual);
@@ -1365,11 +1463,18 @@ function getAllWeeks(){
   MATCHES.forEach(m=>{const r=getWeekRange(m.date); if(!seen[r.start])seen[r.start]=r;});
   return Object.values(seen).sort((a,b)=>a.start.localeCompare(b.start));
 }
+/* Điểm khởi đầu chỉ áp dụng cho ĐÚNG tuần chứa mốc tham gia (tránh cộng trùng mỗi tuần) */
+function getMemberWeeklyStartPts(mb,weekStart,weekEnd){
+  const sp=getSpecialCutoff(mb);
+  if(!sp||typeof sp.startPts!=='number')return 0;
+  const c=sp.cutoff;
+  const cDateStr=c.getFullYear()+'-'+pad2(c.getMonth()+1)+'-'+pad2(c.getDate());
+  return(cDateStr>=weekStart&&cDateStr<=weekEnd)?sp.startPts:0;
+}
 function computeWeeklyStats(start,end){
   return S.members.map(mb=>{
-    let pts=0,correct=0,wrong=0;
-    const memberStart=getMemberStartDate(mb);
-    MATCHES.filter(m=>m.date>=start&&m.date<=end&&m.date>=memberStart).forEach(m=>{
+    let pts=getMemberWeeklyStartPts(mb,start,end),correct=0,wrong=0;
+    MATCHES.filter(m=>m.date>=start&&m.date<=end&&isMatchCountedForMember(m,mb)).forEach(m=>{
       const actual=S.actualScores[m.id];
       if(!actual)return;
       const pred=S.predictions[m.id]&&S.predictions[m.id][mb];
@@ -1704,6 +1809,7 @@ function pickUser(name, evt){
   currentUser = name;
   localStorage.setItem(UP_KEY, name);
   updateUserChip();
+  renderMatches();
 
   // Đóng overlay sau hiệu ứng ngắn
   setTimeout(()=>{
