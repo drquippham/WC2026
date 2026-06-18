@@ -1060,11 +1060,11 @@ function buildModal(m){
     +'</div>';});
   html+='</div>';
 
-  // ===== Nhận định AI (Gemini) =====
+  // ===== Nhận định AI (Quimini) =====
   const ai=S.aiAnalysis[m.id];
   html+='<div class="info-card ai-card" id="ai-card-'+m.id+'">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">'
-    +'<div class="info-card-title" style="color:#7C3AED;margin-bottom:0">🤖 Nhận định AI (Gemini)</div>'
+    +'<div class="info-card-title" style="color:#7C3AED;margin-bottom:0">🤖 Nhận định AI (Quimini)</div>'
     +(ai?'<button class="btn-ai-refresh" onclick="regenAI(\''+m.id+'\')" title="Tạo lại">🔄</button>':'')
     +'</div>'
     +'<div id="ai-body-'+m.id+'">'
