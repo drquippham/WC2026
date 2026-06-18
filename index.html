@@ -1060,7 +1060,7 @@ function buildModal(m){
     +'</div>';});
   html+='</div>';
 
-  // ===== Nhận định AI (Quimini) =====
+  // ===== Nhận định AI (Gemini) =====
   const ai=S.aiAnalysis[m.id];
   html+='<div class="info-card ai-card" id="ai-card-'+m.id+'">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">'
@@ -1352,7 +1352,9 @@ function getMemberStartDate(mb){
    Các trận có giờ bóng lăn (kickoff) <= mốc này → đánh dấu "Chưa tham gia", không tính điểm.
    startPts: điểm khởi đầu (offset) để đảm bảo công bằng với các thành viên đã tham gia từ đầu. */
 const SPECIAL_CUTOFF_MEMBERS={
-  'Minh Lu':{cutoff:new Date(2026,5,18,18,0),startPts:-5} // 18/06/2026 18:00 (giờ VN)
+  'Minh Lu':{cutoff:new Date(2026,5,18,18,0),startPts:-5}, // 18/06/2026 18:00 (giờ VN)
+  'Xuân An':{cutoff:new Date(2026,5,19,0,0),startPts:-5}, // 19/06/2026 00:00 (giờ VN)
+  'Luân 9x':{cutoff:new Date(2026,5,19,0,0),startPts:-5} // 19/06/2026 00:00 (giờ VN)
 };
 function getSpecialCutoff(mb){
   const key=Object.keys(SPECIAL_CUTOFF_MEMBERS).find(k=>k.trim().toLowerCase()===String(mb).trim().toLowerCase());
