@@ -465,6 +465,9 @@ window.__firebaseInit = async function(databaseURL) {
 window.__setGeminiBackupKeysAdmin = async function(keysArr) {
   if (!dbReady || !db) { alert('❌ Chưa kết nối Firebase!'); return; }
   if (!Array.isArray(keysArr) || !keysArr.length) { alert('❌ Cần truyền vào một mảng API key.'); return; }
+  const pw = prompt('🔒 Nhập mật khẩu admin để lưu API key backup:');
+  if (pw === null) return;
+  if (pw !== 'Qui') { alert('❌ Sai mật khẩu!'); return; }
   try {
     await set(ref(db, 'wc2026/config/gemini_keys_backup'), keysArr);
     const keySnap = await get(ref(db, 'wc2026/config/gemini_key'));
@@ -952,8 +955,6 @@ function renderMatches(){
   const sortedDates=Object.keys(byDate).sort();
   document.getElementById('match-list').innerHTML=sortedDates.map(date=>
     '<div class="date-label" id="date-'+date+'">📆 '+fmtDate(date)+'</div>'+byDate[date].map(renderCard).join('')).join('');
-  // Tự động cuộn đến ngày hôm nay
-  scrollToToday();
 }
 
 function scrollToToday(){
@@ -1830,6 +1831,7 @@ function updateUserChip(){
 }
 
 renderFilters();renderMatches();renderSettings();
+scrollToToday();
 autoFetchResults();
 
 // Hiện picker nếu chưa chọn, hoặc tên đã xóa khỏi team
