@@ -239,6 +239,28 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .scoring-card{background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border:1px solid #C7D2FE;
   border-radius:var(--radius-sm);padding:14px;font-size:13px;color:var(--text2);line-height:2}
 .empty{text-align:center;padding:48px 20px;color:var(--text3)}
+/* ====== QUỸ ĐỘI ====== */
+.fund-section{background:var(--white);border:1.5px solid var(--border2);border-radius:var(--radius);
+  padding:18px 20px;margin-bottom:24px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.fund-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.fund-title{font-family:'Bebas Neue';font-size:20px;color:var(--text);letter-spacing:.5px}
+.fund-total-chip{background:linear-gradient(135deg,#DC2626,#F87171);color:#fff;
+  font-size:13px;font-weight:700;padding:5px 14px;border-radius:20px;white-space:nowrap}
+.fund-note{font-size:11px;color:var(--text3);margin-bottom:12px}
+.fund-table-wrap{overflow-x:auto;border-radius:var(--radius-sm);border:1px solid var(--border2)}
+.fund-table{width:100%;border-collapse:collapse;font-size:13px}
+.fund-table th{background:var(--bg);color:var(--text3);font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.5px;padding:8px 14px;border-bottom:1px solid var(--border2);text-align:left;white-space:nowrap}
+.fund-table td{padding:9px 14px;border-bottom:1px solid var(--border2);vertical-align:middle}
+.fund-table tr:last-child td{border-bottom:none}
+.fund-table tr:hover td{background:var(--bg)}
+.fund-name-cell{display:flex;align-items:center;gap:8px}
+.fund-av{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#7C3AED);
+  color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fund-wrong{font-family:'Bebas Neue';font-size:18px;color:#DC2626}
+.fund-money{font-family:'Bebas Neue';font-size:18px}
+.fund-bar-wrap{width:80px;background:var(--bg2);border-radius:4px;height:6px;overflow:hidden;display:inline-block;vertical-align:middle;margin-left:6px}
+.fund-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#F87171,#DC2626);transition:.4s}
 .empty-icon{font-size:48px;margin-bottom:10px}
 .week-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px;flex-wrap:wrap}
 .week-select{font-family:'Inter';font-size:13px;font-weight:700;color:var(--text);background:var(--white);
@@ -438,6 +460,19 @@ window.__firebaseInit = async function(databaseURL) {
     // Hiện trạng thái đồng bộ
     const el = document.getElementById('sync-status');
     if (el) { el.textContent = '🟢 Đã đồng bộ'; el.style.color = '#16A34A'; }
+    // Lần đầu Firebase trả về members thật → quyết định có show picker không
+    if(!window.__fbMembersLoaded){
+      window.__fbMembersLoaded = true;
+      const cu = localStorage.getItem('wc2026_current_user');
+      if(!cu || !S.members.includes(cu)){
+        if(window.showUserPicker) window.showUserPicker(true);
+      } else {
+        if(window.updateUserChip) window.updateUserChip();
+      }
+    }
+    // Cập nhật quỹ đội nếu đang ở dashboard
+    if(document.getElementById('page-dashboard').classList.contains('active')) renderDashboard();
+    else if(window.renderFund) window.renderFund();
   });
 
   // Push data hiện tại lên Firebase nếu chưa có
@@ -557,6 +592,7 @@ window.__fbSave = async function(path, value) {
     </div>
     <div id="fetch-status" style="font-size:12px;color:var(--text3);margin:-10px 0 16px"></div>
     <div id="leaderboard-grid" class="leaderboard"></div>
+    <div id="fund-section" class="fund-section" style="display:none"></div>
     <div style="font-family:'Bebas Neue';font-size:22px;color:var(--text);margin-bottom:14px;letter-spacing:.5px">📋 LỊCH SỬ DỰ ĐOÁN</div>
     <div id="history-wrap"></div>
   </div>
@@ -1421,7 +1457,8 @@ function renderDashboard(){
 
   const finished=MATCHES.filter(m=>S.actualScores[m.id] && m.date>='2026-06-16')
   .slice().sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
-  if(!finished.length){document.getElementById('history-wrap').innerHTML='<div class="empty"><div class="empty-icon">⏳</div><p>Chưa có trận nào kết thúc</p></div>';return;}
+  if(!finished.length){document.getElementById('history-wrap').innerHTML='<div class="empty"><div class="empty-icon">⏳</div><p>Chưa có trận nào kết thúc</p></div>';
+  renderFund();return;}
   let tbl='<div class="hist-wrap"><table class="hist-table"><thead><tr><th>Trận đấu</th><th>Kết quả</th>'
     +S.members.map(m=>'<th>'+m+'</th>').join('')+'</tr></thead><tbody>';
   finished.forEach(m=>{
@@ -1444,6 +1481,50 @@ function renderDashboard(){
   });
   tbl+='</tbody></table></div>';
   document.getElementById('history-wrap').innerHTML=tbl;
+  renderFund();
+}
+
+function renderFund(){
+  const PENALTY=10000;
+  const fundStats=S.members.map(mb=>{
+    let wrong=0;
+    MATCHES.filter(m=>isMatchCountedForMember(m,mb)).forEach(m=>{
+      const actual=S.actualScores[m.id];
+      if(!actual)return;
+      const pred=S.predictions[m.id]&&S.predictions[m.id][mb];
+      if(!pred){wrong++;return;}
+      const p=calcPts(pred,actual);
+      if(p!==null&&p!==0)wrong++;
+    });
+    return{name:mb,wrong,fund:wrong*PENALTY};
+  }).sort((a,b)=>b.wrong-a.wrong);
+  const totalFund=fundStats.reduce((sum,s)=>sum+s.fund,0);
+  const maxWrong=Math.max(...fundStats.map(s=>s.wrong),1);
+  const fmt=n=>n.toLocaleString('vi-VN')+'đ';
+  const el=document.getElementById('fund-section');
+  if(!el)return;
+  el.style.display='block';
+  let html='<div class="fund-header">'
+    +'<div class="fund-title">💰 QUỸ ĐỘI</div>'
+    +'<div class="fund-total-chip">Tổng quỹ: '+fmt(totalFund)+'</div>'
+    +'</div>'
+    +'<div class="fund-note">❌ Mỗi trận đoán sai = <b>10.000đ</b> vào quỹ đội</div>'
+    +'<div class="fund-table-wrap"><table class="fund-table">'
+    +'<thead><tr><th>#</th><th>Thành viên</th><th>Trận sai</th><th>Đóng quỹ</th></tr></thead><tbody>';
+  fundStats.forEach((s,i)=>{
+    const pct=maxWrong>0?Math.round(s.wrong/maxWrong*100):0;
+    html+='<tr>'
+      +'<td style="font-weight:700;color:var(--text3)">'+(i+1)+'</td>'
+      +'<td><div class="fund-name-cell"><div class="fund-av">'+s.name[0]+'</div>'
+      +'<span style="font-weight:600">'+s.name+'</span></div></td>'
+      +'<td><span class="fund-wrong">'+s.wrong+'</span>'
+      +(s.wrong>0?'<span class="fund-bar-wrap"><span class="fund-bar-fill" style="width:'+pct+'%"></span></span>':'')
+      +'</td>'
+      +'<td><span class="fund-money" style="color:'+(s.fund>0?'#DC2626':'#16A34A')+'">'+fmt(s.fund)+'</span></td>'
+      +'</tr>';
+  });
+  html+='</tbody></table></div>';
+  el.innerHTML=html;
 }
 
 /* ===== ĐIỂM THEO TUẦN (Thứ 2 → Chủ nhật) ===== */
@@ -1711,7 +1792,8 @@ function showPage(id,btn){
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   btn.classList.add('active');
-  if(id==='dashboard')renderDashboard();
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(id==='dashboard'){renderDashboard();renderFund();}
   if(id==='weekly')renderWeekly();
   if(id==='settings')renderSettings();
   if(id==='schedule')scrollToToday();
@@ -1837,12 +1919,12 @@ scrollToToday();
 autoFetchResults();
 
 // Hiện picker nếu chưa chọn, hoặc tên đã xóa khỏi team
+// Nếu đã có cache → show ngay; nếu chưa có → chờ Firebase load members rồi Firebase sẽ trigger
 setTimeout(()=>{
-  if(!currentUser || !S.members.includes(currentUser)){
-    showUserPicker(true);
-  } else {
+  if(currentUser && S.members.includes(currentUser)){
     updateUserChip();
   }
+  // Nếu chưa có cache: Firebase onValue sẽ set __fbMembersLoaded và gọi showUserPicker
 }, 300);
 
 /* ====== FIREBASE CONNECT ======
