@@ -944,7 +944,7 @@ saveS();
 
 function nowVN(){return new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Ho_Chi_Minh'}));}
 function kickoff(m){const[y,mo,d]=m.date.split('-').map(Number);const[h,mi]=m.time.split(':').map(Number);return new Date(y,mo-1,d,h,mi);}
-function canEdit(m){return(kickoff(m)-nowVN())/60000>60;}
+function canEdit(m){return(kickoff(m)-nowVN())/60000>10;}
 function getStatus(m){const diff=(kickoff(m)-nowVN())/60000;if(diff>60)return'upcoming';if(diff>0)return'soon';if(diff>-110)return'live';return'finished';}
 function fmtDate(ds){const[y,mo,d]=ds.split('-').map(Number);const dt=new Date(y,mo-1,d);return['CN','T2','T3','T4','T5','T6','T7'][dt.getDay()]+', '+d+'/'+mo;}
 function getOutcome(h,a){return h>a?'home':a>h?'away':'draw';}
